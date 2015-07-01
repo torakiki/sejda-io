@@ -5,5 +5,3 @@ Sejda-io (http://www.sejda.org)
 
 A layer set of Input/Output classes built on top of java io and nio.
 
-Sejda offers many "ready to go" manipulations implemented using iText, PDFBox or ICEpdf but it can be extended and/or configured to use other implementations.
-
