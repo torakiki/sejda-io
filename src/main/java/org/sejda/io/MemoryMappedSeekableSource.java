@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.sejda.io.input;
+package org.sejda.io;
 
 import static java.util.Optional.ofNullable;
 import static org.sejda.util.RequireUtils.requireArg;

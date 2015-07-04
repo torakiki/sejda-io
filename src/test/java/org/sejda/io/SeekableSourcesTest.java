@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.sejda.io.input;
+package org.sejda.io;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -28,6 +28,7 @@ import java.nio.file.StandardCopyOption;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.sejda.io.SeekableSources;
 
 /**
  * @author Andrea Vacondio

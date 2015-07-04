@@ -14,36 +14,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.sejda.io.input;
+package org.sejda.io;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.sejda.io.BufferedSeekableSource;
+import org.sejda.io.ByteArraySeekableSource;
+import org.sejda.io.SeekableSource;
 
 /**
  * @author Andrea Vacondio
  *
  */
-public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
+public class BufferedSeekableSourceTest extends BaseTestSeekableSource
 {
-
-    private ByteArraySeekableSource victim;
+    private ByteArraySeekableSource wrapped;
+    private BufferedSeekableSource victim;
 
     @Before
     public void setUp()
     {
-        victim = new ByteArraySeekableSource(new byte[] { 'a', 'b', 'c' });
+        wrapped = new ByteArraySeekableSource(new byte[] { 'a', 'b', 'c' });
+        victim = new BufferedSeekableSource(wrapped);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void failingConstructor()
     {
-        new ByteArraySeekableSource(null);
+        new BufferedSeekableSource(null);
+    }
+
+    @Test
+    public void constructor()
+    {
+        assertEquals(wrapped.id(), victim.id());
+        assertEquals(wrapped.size(), victim.size());
+    }
+
+    @Override
+    @Test
+    public void close() throws IOException
+    {
+        victim.read();
+        assertTrue(victim.isOpen());
+        assertTrue(wrapped.isOpen());
+        victim.close();
+        assertFalse(victim.isOpen());
+        assertFalse(wrapped.isOpen());
     }
 
     @Test
@@ -101,5 +125,4 @@ public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
     {
         return victim;
     }
-
 }

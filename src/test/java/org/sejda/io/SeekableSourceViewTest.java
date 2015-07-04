@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.sejda.io.input;
+package org.sejda.io;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,6 +30,10 @@ import java.nio.file.StandardCopyOption;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.sejda.io.ByteArraySeekableSource;
+import org.sejda.io.FileChannelSeekableSource;
+import org.sejda.io.SeekableSource;
+import org.sejda.io.SeekableSourceView;
 
 /**
  * @author Andrea Vacondio
