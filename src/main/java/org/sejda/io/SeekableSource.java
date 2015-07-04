@@ -92,7 +92,7 @@ public interface SeekableSource extends ReadableByteChannel {
      * 
      * @return this source
      * @throws IOException
-     * @see {@link SeekableSource#back(long)}
+     * @see SeekableSource#back(long)
      */
     default SeekableSource back() throws IOException {
         return back(1);
@@ -116,7 +116,7 @@ public interface SeekableSource extends ReadableByteChannel {
      * 
      * @return the next byte or {@code -1} if there is no more data.
      * @throws IOException
-     * @see {@link #read()}
+     * @see #read()
      */
     default int peek() throws IOException {
         int val = read();

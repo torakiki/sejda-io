@@ -25,9 +25,9 @@ import java.nio.ByteBuffer;
 import org.sejda.util.IOUtils;
 
 /**
- * {@link SeekableSource} wrapping an existing one and providing buffered read. When a read method is called, a {@link SAMBox#INPUT_BUFFER_SIZE_PROPERTY} long chunk of bytes is
- * read from the underlying source and stored in memory. Subsequent reads are served from the in memory buffer until they fall outside its range, at that point a new buffer is read
- * from the wrapped source.
+ * {@link SeekableSource} wrapping an existing one and providing buffered read. When a read method is called, a {@link SeekableSources#INPUT_BUFFER_SIZE_PROPERTY} long chunk of
+ * bytes is read from the underlying source and stored in memory. Subsequent reads are served from the in memory buffer until they fall outside its range, at that point a new
+ * buffer is read from the wrapped source.
  * 
  * @author Andrea Vacondio
  */

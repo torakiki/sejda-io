@@ -88,7 +88,6 @@ public final class SeekableSources {
      * 
      * @param bytes
      * @return a {@link SeekableSource} wrapping the given byte array.
-     * @throws IOException
      */
     public static SeekableSource inMemorySeekableSourceFrom(byte[] bytes) {
         requireNonNull(bytes);

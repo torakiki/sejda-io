@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination algorithm allowing to
- * open files of any size. The size of the pages can be configured using the {@link SAMBox#MEMORY_MAPPED_PAGE_SIZE_PROPERTY} systm property.
+ * open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY} systm property.
  * 
  * @author Andrea Vacondio
  *

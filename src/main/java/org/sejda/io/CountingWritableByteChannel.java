@@ -34,14 +34,12 @@ import org.sejda.util.IOUtils;
  * 
  * @author Andrea Vacondio
  */
-public class CountingWritableByteChannel implements WritableByteChannel
-{
+public class CountingWritableByteChannel implements WritableByteChannel {
 
     private long written = 0;
     private WritableByteChannel wrapped;
 
-    public CountingWritableByteChannel(WritableByteChannel wrapped)
-    {
+    public CountingWritableByteChannel(WritableByteChannel wrapped) {
         requireNotNullArg(wrapped, "Cannot decorate a null instance");
         this.wrapped = wrapped;
     }
@@ -49,16 +47,13 @@ public class CountingWritableByteChannel implements WritableByteChannel
     /**
      * @return the number of written bytes
      */
-    public long count()
-    {
+    public long count() {
         return written;
     }
 
     @Override
-    public int write(ByteBuffer src) throws IOException
-    {
-        if (!isOpen())
-        {
+    public int write(ByteBuffer src) throws IOException {
+        if (!isOpen()) {
             throw new ClosedChannelException();
         }
         int count = wrapped.write(src);
@@ -67,26 +62,22 @@ public class CountingWritableByteChannel implements WritableByteChannel
     }
 
     @Override
-    public boolean isOpen()
-    {
+    public boolean isOpen() {
         return wrapped.isOpen();
     }
 
     @Override
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         IOUtils.close(wrapped);
     }
 
     /**
-     * Static factory method to create a {@link CountingWritableByteChannel} from an existing
-     * {@link WritableByteChannel}.
+     * Static factory method to create a {@link CountingWritableByteChannel} from an existing {@link WritableByteChannel}.
      * 
      * @param channel
      * @return the newly created {@link CountingWritableByteChannel}
      */
-    public static CountingWritableByteChannel from(WritableByteChannel channel)
-    {
+    public static CountingWritableByteChannel from(WritableByteChannel channel) {
         return new CountingWritableByteChannel(channel);
     }
 
@@ -96,36 +87,33 @@ public class CountingWritableByteChannel implements WritableByteChannel
      * @param stream
      * @return the newly created {@link CountingWritableByteChannel}
      */
-    public static CountingWritableByteChannel from(OutputStream stream)
-    {
+    public static CountingWritableByteChannel from(OutputStream stream) {
         return new CountingWritableByteChannel(Channels.newChannel(stream));
     }
 
     /**
-     * Static factory method to create a {@link CountingWritableByteChannel} from an existing {@link File}. If the file
-     * already exists its content is purged.
+     * Static factory method to create a {@link CountingWritableByteChannel} from an existing {@link File}. If the file already exists its content is purged.
      * 
      * @param file
      * @return the newly created {@link CountingWritableByteChannel}
+     * @throws IOException
      * @see RandomAccessFile#RandomAccessFile(File, String)
      */
-    public static CountingWritableByteChannel from(File file) throws IOException
-    {
+    public static CountingWritableByteChannel from(File file) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(file, "rw");
         raf.setLength(0);
         return new CountingWritableByteChannel(raf.getChannel());
     }
 
     /**
-     * Static factory method to create a {@link CountingWritableByteChannel} from an existing file path. If the file
-     * already exists its content is purged.
+     * Static factory method to create a {@link CountingWritableByteChannel} from an existing file path. If the file already exists its content is purged.
      * 
      * @param file
      * @return the newly created {@link CountingWritableByteChannel}
+     * @throws IOException
      * @see RandomAccessFile#RandomAccessFile(String, String)
      */
-    public static CountingWritableByteChannel from(String file) throws IOException
-    {
+    public static CountingWritableByteChannel from(String file) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(file, "rw");
         raf.setLength(0);
         return new CountingWritableByteChannel(raf.getChannel());
