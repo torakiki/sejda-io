@@ -20,6 +20,7 @@ import static org.sejda.util.RequireUtils.requireArg;
 import static org.sejda.util.RequireUtils.requireIOCondition;
 import static org.sejda.util.RequireUtils.requireNotBlank;
 import static org.sejda.util.RequireUtils.requireNotNullArg;
+import static org.sejda.util.RequireUtils.requireState;
 
 import java.io.IOException;
 
@@ -29,51 +30,49 @@ import org.junit.Test;
  * @author Andrea Vacondio
  *
  */
-public class RequireUtilsTest
-{
+public class RequireUtilsTest {
 
     @Test(expected = IllegalArgumentException.class)
-    public void nullArg()
-    {
+    public void nullArg() {
         requireNotNullArg(null, "message");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void falseConditionArg()
-    {
+    public void falseConditionArg() {
         requireArg(false, "message");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void nullArgNotBlank()
-    {
+    public void nullArgNotBlank() {
         requireNotBlank(null, "message");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void emptyArgNotBlank()
-    {
+    public void emptyArgNotBlank() {
         requireNotBlank("", "message");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void blankArgNotBlank()
-    {
+    public void blankArgNotBlank() {
         requireNotBlank(" ", "message");
     }
 
     @Test(expected = IOException.class)
-    public void faseConditionIO() throws IOException
-    {
+    public void faseConditionIO() throws IOException {
         requireIOCondition(false, "message");
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void faseState() throws IOException {
+        requireState(false, "message");
+    }
+
     @Test
-    public void positiveArg() throws IOException
-    {
+    public void positiveArg() throws IOException {
         requireArg(true, "message");
         requireNotNullArg(new Object(), "message");
         requireNotBlank("ChuckNorris", "message");
         requireIOCondition(true, "message");
+        requireState(true, "message");
     }
 }

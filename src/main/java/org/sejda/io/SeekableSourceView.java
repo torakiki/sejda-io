@@ -18,6 +18,7 @@ package org.sejda.io;
 
 import static java.util.Optional.ofNullable;
 import static org.sejda.util.RequireUtils.requireArg;
+import static org.sejda.util.RequireUtils.requireState;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -106,9 +107,7 @@ public class SeekableSourceView extends BaseSeekableSource {
     @Override
     protected void requireOpen() {
         super.requireOpen();
-        if (!wrapped.isOpen()) {
-            throw new IllegalStateException("The original SeekableSource has been closed");
-        }
+        requireState(wrapped.isOpen(), "The original SeekableSource has been closed");
     }
 
     /**

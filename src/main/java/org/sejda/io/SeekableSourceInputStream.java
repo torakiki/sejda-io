@@ -17,6 +17,7 @@
 package org.sejda.io;
 
 import static java.util.Objects.requireNonNull;
+import static org.sejda.util.RequireUtils.requireState;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +29,6 @@ import org.sejda.util.IOUtils;
  * Bridge between {@link SeekableSource} and {@link InputStream}
  * 
  * @author Andrea Vacondio
- *
  */
 class SeekableSourceInputStream extends InputStream {
     private SeekableSource wrapped;
@@ -75,9 +75,7 @@ class SeekableSourceInputStream extends InputStream {
     }
 
     private SeekableSource getSource() {
-        if (wrapped.isOpen()) {
-            return wrapped;
-        }
-        throw new IllegalStateException("The SeekableSource has been closed");
+        requireState(wrapped.isOpen(), "The SeekableSource has been closed");
+        return wrapped;
     }
 }

@@ -24,11 +24,9 @@ import java.io.IOException;
  * @author Andrea Vacondio
  *
  */
-public final class RequireUtils
-{
+public final class RequireUtils {
 
-    private RequireUtils()
-    {
+    private RequireUtils() {
         // utility class
     }
 
@@ -38,10 +36,8 @@ public final class RequireUtils
      * @param arg
      * @param exceptionMessage
      */
-    public static void requireNotNullArg(Object arg, String exceptionMessage)
-    {
-        if (arg == null)
-        {
+    public static void requireNotNullArg(Object arg, String exceptionMessage) {
+        if (arg == null) {
             throw new IllegalArgumentException(exceptionMessage);
         }
     }
@@ -52,10 +48,8 @@ public final class RequireUtils
      * @param condition
      * @param exceptionMessage
      */
-    public static void requireArg(boolean condition, String exceptionMessage)
-    {
-        if (!condition)
-        {
+    public static void requireArg(boolean condition, String exceptionMessage) {
+        if (!condition) {
             throw new IllegalArgumentException(exceptionMessage);
         }
     }
@@ -63,11 +57,11 @@ public final class RequireUtils
     /**
      * Throws an {@link IllegalArgumentException} if the given string is blank
      * 
-     * @param value string
+     * @param value
+     *            string
      * @param exceptionMessage
      */
-    public static void requireNotBlank(String value, String exceptionMessage)
-    {
+    public static void requireNotBlank(String value, String exceptionMessage) {
         requireArg(value != null && value.trim().length() > 0, exceptionMessage);
     }
 
@@ -78,12 +72,22 @@ public final class RequireUtils
      * @param exceptionMessage
      * @throws IOException
      */
-    public static void requireIOCondition(boolean condition, String exceptionMessage)
-            throws IOException
-    {
-        if (!condition)
-        {
+    public static void requireIOCondition(boolean condition, String exceptionMessage) throws IOException {
+        if (!condition) {
             throw new IOException(exceptionMessage);
+        }
+    }
+
+    /**
+     * Throws an {@link IllegalStateException} if the given condition is not met
+     * 
+     * @param condition
+     * @param exceptionMessage
+     * @throws IllegalStateException
+     */
+    public static void requireState(boolean condition, String exceptionMessage) {
+        if (!condition) {
+            throw new IllegalStateException(exceptionMessage);
         }
     }
 }
