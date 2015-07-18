@@ -18,6 +18,7 @@ package org.sejda.io;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -25,8 +26,6 @@ import java.nio.ByteBuffer;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.sejda.io.BaseSeekableSource;
-import org.sejda.io.SeekableSource;
 
 /**
  * @author Andrea Vacondio
@@ -108,4 +107,10 @@ public class BaseSeekableSourceTest
     {
         assertEquals("id", victim.id());
     }
+
+    @Test
+    public void inputStreamFrom() {
+        assertNotNull(victim.asInputStream());
+    }
+
 }

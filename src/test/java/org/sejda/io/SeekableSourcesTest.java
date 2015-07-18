@@ -28,7 +28,6 @@ import java.nio.file.StandardCopyOption;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.sejda.io.SeekableSources;
 
 /**
  * @author Andrea Vacondio
@@ -62,12 +61,6 @@ public class SeekableSourcesTest
     public void nullOnTempFileSeekableSourceFrom() throws IOException
     {
         SeekableSources.onTempFileSeekableSourceFrom(null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void nullInputStreamFrom()
-    {
-        SeekableSources.inputStreamFrom(null);
     }
 
     @Test
@@ -104,13 +97,6 @@ public class SeekableSourcesTest
     {
         assertNotNull(SeekableSources.inMemorySeekableSourceFrom(getClass().getResourceAsStream(
 "/pdf/simple_test.pdf")));
-    }
-
-    @Test
-    public void inputStreamFrom()
-    {
-        assertNotNull(SeekableSources.inputStreamFrom(SeekableSources
-                .inMemorySeekableSourceFrom(new byte[] { -1 })));
     }
 
     @Test

@@ -17,6 +17,7 @@
 package org.sejda.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.channels.ReadableByteChannel;
 
 /**
@@ -124,5 +125,14 @@ public interface SeekableSource extends ReadableByteChannel {
             back(1);
         }
         return val;
+    }
+
+    /**
+     * Creates an {@link InputStream} from this {@link SeekableSource}.
+     * 
+     * @return the input stream wrapping the given {@link SeekableSource}
+     */
+    default InputStream asInputStream() {
+        return new SeekableSourceInputStream(this);
     }
 }

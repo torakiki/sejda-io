@@ -113,16 +113,4 @@ public final class SeekableSources {
             }
         });
     }
-
-    /**
-     * Factory method to create an {@link InputStream} from a {@link SeekableSource}.
-     * 
-     * @param source
-     *            the source
-     * @return the input stream wrapping the given {@link SeekableSource}
-     */
-    public static InputStream inputStreamFrom(SeekableSource source) {
-        requireNonNull(source);
-        return new SeekableSourceInputStream(source);
-    }
 }
