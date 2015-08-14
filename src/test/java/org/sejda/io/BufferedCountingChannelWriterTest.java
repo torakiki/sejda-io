@@ -38,43 +38,47 @@ import org.junit.Test;
  * @author Andrea Vacondio
  *
  */
-public class BufferedCountingChannelWriterTest
-{
+public class BufferedCountingChannelWriterTest {
 
     private ByteArrayOutputStream out;
     private CountingWritableByteChannel channel;
     private BufferedCountingChannelWriter victim;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         out = new ByteArrayOutputStream();
         channel = CountingWritableByteChannel.from(out);
         victim = new BufferedCountingChannelWriter(channel);
     }
 
     @After
-    public void after()
-    {
+    public void after() {
         System.getProperties().remove(BufferedCountingChannelWriter.OUTPUT_BUFFER_SIZE_PROPERTY);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void nullConstructor()
-    {
+    public void nullConstructor() {
         new BufferedCountingChannelWriter(null);
     }
 
     @Test
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         victim.close();
         assertFalse(channel.isOpen());
     }
 
     @Test
-    public void closeFlushes() throws IOException
-    {
+    public void flush() throws IOException {
+        channel = mock(CountingWritableByteChannel.class);
+        victim = new BufferedCountingChannelWriter(channel);
+        victim.writeEOL();
+        verify(channel, times(0)).write(any());
+        victim.flush();
+        verify(channel).write(any());
+    }
+
+    @Test
+    public void closeFlushes() throws IOException {
         channel = mock(CountingWritableByteChannel.class);
         victim = new BufferedCountingChannelWriter(channel);
         victim.writeEOL();
@@ -84,16 +88,14 @@ public class BufferedCountingChannelWriterTest
     }
 
     @Test
-    public void writeEOL() throws IOException
-    {
+    public void writeEOL() throws IOException {
         victim.writeEOL();
         victim.close();
         assertTrue(Arrays.equals(new byte[] { '\n' }, out.toByteArray()));
     }
 
     @Test
-    public void prettyPrintJustOneEOL() throws IOException
-    {
+    public void prettyPrintJustOneEOL() throws IOException {
         victim.writeEOL();
         victim.writeEOL();
         victim.write((byte) -1);
@@ -104,24 +106,21 @@ public class BufferedCountingChannelWriterTest
     }
 
     @Test(expected = ClosedChannelException.class)
-    public void flushOnClosed() throws IOException
-    {
+    public void flushOnClosed() throws IOException {
         victim.close();
         victim.writeEOL();
         victim.close();
     }
 
     @Test
-    public void writeString() throws IOException
-    {
+    public void writeString() throws IOException {
         victim.write("ChuckNorris");
         victim.close();
         assertTrue(Arrays.equals("ChuckNorris".getBytes("ISO-8859-1"), out.toByteArray()));
     }
 
     @Test
-    public void writeBytesExceedingBuffer() throws IOException
-    {
+    public void writeBytesExceedingBuffer() throws IOException {
         System.getProperties().setProperty(BufferedCountingChannelWriter.OUTPUT_BUFFER_SIZE_PROPERTY, "4");
         victim = new BufferedCountingChannelWriter(channel);
         byte[] bytes = new byte[] { '1', '1', '2', '1', '1' };
@@ -132,8 +131,7 @@ public class BufferedCountingChannelWriterTest
     }
 
     @Test
-    public void writeInputStream() throws IOException
-    {
+    public void writeInputStream() throws IOException {
         byte[] bytes = new byte[] { '1', '1', '2', '1', '1' };
         victim.write(bytes);
         byte[] streamBytes = "ChuckNorris".getBytes("ISO-8859-1");

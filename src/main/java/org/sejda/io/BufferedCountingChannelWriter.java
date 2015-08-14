@@ -51,7 +51,7 @@ public class BufferedCountingChannelWriter implements Closeable {
     @Override
     public void close() throws IOException {
         if (buffer.position() != 0) {
-            flushBuffer();
+            flush();
         }
         IOUtils.close(channel);
     }
@@ -95,7 +95,7 @@ public class BufferedCountingChannelWriter implements Closeable {
         onNewLine = false;
         buffer.put(myByte);
         if (!buffer.hasRemaining()) {
-            flushBuffer();
+            flush();
         }
     }
 
@@ -108,9 +108,9 @@ public class BufferedCountingChannelWriter implements Closeable {
     public void write(InputStream stream) throws IOException {
         onNewLine = false;
         try (ReadableByteChannel readable = Channels.newChannel(stream)) {
-            flushBuffer();
+            flush();
             while (readable.read(buffer) != -1) {
-                flushBuffer();
+                flush();
             }
         }
     }
@@ -122,7 +122,12 @@ public class BufferedCountingChannelWriter implements Closeable {
         return channel.count() + buffer.position();
     }
 
-    private void flushBuffer() throws IOException {
+    /**
+     * Flush the buffer
+     * 
+     * @throws IOException
+     */
+    public void flush() throws IOException {
         buffer.flip();
         channel.write(buffer);
         buffer.clear();
