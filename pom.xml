@@ -90,7 +90,6 @@
 						<configuration>
 							<tagNameFormat>v@{project.version}</tagNameFormat>
 							<preparationGoals>clean install</preparationGoals>
-							<generateReleasePoms>true</generateReleasePoms>
 						</configuration>
 					</plugin>
 				</plugins>
