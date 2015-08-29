@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import org.sejda.util.IOUtils;
-
 /**
  * Bridge between {@link SeekableSource} and {@link InputStream}
  * 
@@ -67,11 +65,6 @@ class SeekableSourceInputStream extends InputStream {
         SeekableSource source = getSource();
         long start = source.position();
         return source.forward(Math.min(offset, available())).position() - start;
-    }
-
-    @Override
-    public void close() throws IOException {
-        IOUtils.close(wrapped);
     }
 
     private SeekableSource getSource() {

@@ -19,6 +19,7 @@ package org.sejda.io;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,9 +29,6 @@ import java.nio.ByteBuffer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.sejda.io.ByteArraySeekableSource;
-import org.sejda.io.SeekableSource;
-import org.sejda.io.SeekableSourceInputStream;
 
 /**
  * @author Andrea Vacondio
@@ -124,10 +122,9 @@ public class SeekableSourceInputStreamTest
     }
 
     @Test
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         victim.close();
-        verify(source).close();
+        verify(source, never()).close();
     }
 
     @Test
