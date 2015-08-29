@@ -60,7 +60,7 @@ public final class IOUtils {
                 closeable.close();
             }
         } catch (IOException ioe) {
-            LOG.info("An error occured while closing a Closeable resource", ioe);
+            LOG.warn("An error occured while closing a Closeable resource", ioe);
         }
     }
 }
