@@ -50,7 +50,7 @@ public class BufferedCountingChannelWriter implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (buffer.position() != 0) {
+        if (channel.isOpen() && buffer.position() != 0) {
             flush();
         }
         IOUtils.close(channel);
