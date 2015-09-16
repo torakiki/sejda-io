@@ -23,11 +23,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.channels.ClosedChannelException;
 import java.util.Arrays;
 
 import org.junit.After;
@@ -80,6 +80,7 @@ public class BufferedCountingChannelWriterTest {
     @Test
     public void closeFlushes() throws IOException {
         channel = mock(CountingWritableByteChannel.class);
+        when(channel.isOpen()).thenReturn(true);
         victim = new BufferedCountingChannelWriter(channel);
         victim.writeEOL();
         verify(channel, times(0)).write(any());
@@ -105,8 +106,8 @@ public class BufferedCountingChannelWriterTest {
         assertTrue(Arrays.equals(new byte[] { '\n', -1, '\n' }, out.toByteArray()));
     }
 
-    @Test(expected = ClosedChannelException.class)
-    public void flushOnClosed() throws IOException {
+    @Test
+    public void multipleCloseDontThrowException() throws IOException {
         victim.close();
         victim.writeEOL();
         victim.close();
