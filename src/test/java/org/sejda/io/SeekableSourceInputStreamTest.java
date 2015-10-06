@@ -34,43 +34,37 @@ import org.mockito.ArgumentCaptor;
  * @author Andrea Vacondio
  *
  */
-public class SeekableSourceInputStreamTest
-{
+public class SeekableSourceInputStreamTest {
 
     private SeekableSource source;
     private SeekableSourceInputStream victim;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         source = mock(SeekableSource.class);
         when(source.isOpen()).thenReturn(true);
         victim = new SeekableSourceInputStream(source);
     }
 
     @Test(expected = NullPointerException.class)
-    public void nullSource()
-    {
+    public void nullSource() {
         new SeekableSourceInputStream(null);
     }
 
     @Test
-    public void read() throws IOException
-    {
+    public void read() throws IOException {
         victim.read();
         verify(source).read();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void readClosed() throws IOException
-    {
+    public void readClosed() throws IOException {
         when(source.isOpen()).thenReturn(false);
         victim.read();
     }
 
     @Test
-    public void readByteArray() throws IOException
-    {
+    public void readByteArray() throws IOException {
         ArgumentCaptor<ByteBuffer> captor = ArgumentCaptor.forClass(ByteBuffer.class);
         byte[] b = new byte[10];
         when(source.size()).thenReturn(20L);
@@ -84,15 +78,13 @@ public class SeekableSourceInputStreamTest
     }
 
     @Test(expected = IllegalStateException.class)
-    public void readByteArrayClosed() throws IOException
-    {
+    public void readByteArrayClosed() throws IOException {
         when(source.isOpen()).thenReturn(false);
         victim.read(new byte[10]);
     }
 
     @Test
-    public void readByteArrayWithPos() throws IOException
-    {
+    public void readByteArrayWithPos() throws IOException {
         ArgumentCaptor<ByteBuffer> captor = ArgumentCaptor.forClass(ByteBuffer.class);
         byte[] b = new byte[10];
         when(source.size()).thenReturn(20L);
@@ -107,18 +99,34 @@ public class SeekableSourceInputStreamTest
     }
 
     @Test(expected = IllegalStateException.class)
-    public void readByteArrayWithPosClosed() throws IOException
-    {
+    public void readByteArrayWithPosClosed() throws IOException {
         when(source.isOpen()).thenReturn(false);
         victim.read(new byte[10], 5, 2);
     }
 
     @Test
-    public void available() throws IOException
-    {
+    public void readByteArrayWhenEndOfStream() throws IOException {
+        ByteArraySeekableSource source = new ByteArraySeekableSource(new byte[] { -1, 1, 0, 1 });
+        SeekableSourceInputStream victim = new SeekableSourceInputStream(source);
+        source.position(4);
+        assertEquals(-1, source.read());
+        byte[] b = new byte[10];
+        assertEquals(-1, victim.read(b, 5, 2));
+    }
+
+    @Test
+    public void available() throws IOException {
         when(source.size()).thenReturn(20L);
         when(source.position()).thenReturn(3L);
         assertEquals(17, victim.available());
+    }
+
+    @Test
+    public void availableNotNegative() throws IOException {
+        ByteArraySeekableSource source = new ByteArraySeekableSource(new byte[] { -1, 1, 0, 1 });
+        SeekableSourceInputStream victim = new SeekableSourceInputStream(source);
+        source.position(10);
+        assertEquals(0, victim.available());
     }
 
     @Test
@@ -128,8 +136,7 @@ public class SeekableSourceInputStreamTest
     }
 
     @Test
-    public void skip() throws IOException
-    {
+    public void skip() throws IOException {
         ByteArraySeekableSource source = new ByteArraySeekableSource(new byte[] { -1, 1, 0, 1 });
         SeekableSourceInputStream victim = new SeekableSourceInputStream(source);
         assertEquals(0, source.position());
@@ -139,8 +146,7 @@ public class SeekableSourceInputStreamTest
     }
 
     @Test(expected = IllegalStateException.class)
-    public void skipClosed() throws IOException
-    {
+    public void skipClosed() throws IOException {
         when(source.isOpen()).thenReturn(false);
         victim.skip(5);
     }

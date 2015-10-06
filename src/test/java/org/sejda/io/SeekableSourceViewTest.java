@@ -30,10 +30,6 @@ import java.nio.file.StandardCopyOption;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.sejda.io.ByteArraySeekableSource;
-import org.sejda.io.FileChannelSeekableSource;
-import org.sejda.io.SeekableSource;
-import org.sejda.io.SeekableSourceView;
 
 /**
  * @author Andrea Vacondio
@@ -151,6 +147,12 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource
         victim.read(empty);
         empty.flip();
         assertFalse(empty.hasRemaining());
+    }
+
+    @Test
+    public void readBigBuff() throws IOException {
+        ByteBuffer dst = ByteBuffer.allocate(8000);
+        assertEquals(100, victim.read(dst));
     }
 
 }

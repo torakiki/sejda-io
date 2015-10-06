@@ -43,21 +43,25 @@ class SeekableSourceInputStream extends InputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
-        return getSource().read(ByteBuffer.wrap(b, 0, Math.min(b.length, available())));
+        if (available() > 0) {
+            return getSource().read(ByteBuffer.wrap(b, 0, Math.min(b.length, available())));
+        }
+        return -1;
     }
 
     @Override
     public int read(byte[] b, int offset, int length) throws IOException {
-        return getSource().read(
-                ByteBuffer.wrap(b, Math.min(b.length, offset),
-                        Math.min(length, Math.min(b.length - offset, available()))));
-
+        if (available() > 0) {
+            return getSource().read(ByteBuffer.wrap(b, Math.min(b.length, offset),
+                    Math.min(length, Math.min(b.length - offset, available()))));
+        }
+        return -1;
     }
 
     @Override
     public int available() throws IOException {
         SeekableSource source = getSource();
-        return (int) (source.size() - source.position());
+        return (int) Math.max(0, (source.size() - source.position()));
     }
 
     @Override

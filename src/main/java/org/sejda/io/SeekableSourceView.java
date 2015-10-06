@@ -71,8 +71,11 @@ public class SeekableSourceView extends BaseSeekableSource {
     @Override
     public int read(ByteBuffer dst) throws IOException {
         requireOpen();
-        if (available()) {
+        if (hasAvailable()) {
             wrapped.position(startingPosition + currentPosition);
+            if (dst.remaining() > available()) {
+                dst.limit(dst.position() + (int) available());
+            }
             int read = wrapped.read(dst);
             if (read > 0) {
                 currentPosition += read;
@@ -85,7 +88,7 @@ public class SeekableSourceView extends BaseSeekableSource {
     @Override
     public int read() throws IOException {
         requireOpen();
-        if (available()) {
+        if (hasAvailable()) {
             wrapped.position(startingPosition + currentPosition);
             currentPosition++;
             return wrapped.read();
@@ -93,8 +96,12 @@ public class SeekableSourceView extends BaseSeekableSource {
         return -1;
     }
 
-    private boolean available() {
-        return currentPosition < length;
+    private boolean hasAvailable() {
+        return available() > 0;
+    }
+
+    private long available() {
+        return length - currentPosition;
     }
 
     @Override
