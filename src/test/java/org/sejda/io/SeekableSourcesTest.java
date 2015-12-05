@@ -17,6 +17,7 @@
 package org.sejda.io;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -33,77 +34,84 @@ import org.junit.rules.TemporaryFolder;
  * @author Andrea Vacondio
  *
  */
-public class SeekableSourcesTest
-{
+public class SeekableSourcesTest {
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
     @Test(expected = NullPointerException.class)
-    public void nullSeekableSourceFrom() throws IOException
-    {
+    public void nullSeekableSourceFrom() throws IOException {
         SeekableSources.seekableSourceFrom(null);
     }
 
     @Test(expected = NullPointerException.class)
-    public void nullInMemorySeekableSourceFromBytes()
-    {
+    public void nullInMemorySeekableSourceFromBytes() {
         SeekableSources.inMemorySeekableSourceFrom((byte[]) null);
     }
 
     @Test(expected = NullPointerException.class)
-    public void nullInMemorySeekableSourceFromStream() throws IOException
-    {
+    public void nullInMemorySeekableSourceFromStream() throws IOException {
         SeekableSources.inMemorySeekableSourceFrom((InputStream) null);
     }
 
     @Test(expected = NullPointerException.class)
-    public void nullOnTempFileSeekableSourceFrom() throws IOException
-    {
+    public void nullOnTempFileSeekableSourceFrom() throws IOException {
         SeekableSources.onTempFileSeekableSourceFrom(null);
     }
 
     @Test
-    public void seekableSourceFrom() throws IOException
-    {
+    public void seekableSourceFrom() throws IOException {
         assertNotNull(SeekableSources.seekableSourceFrom(temp.newFile()));
     }
 
     @Test
-    public void aboveThresholdSeekableSourceFrom() throws IOException
-    {
-        try
-        {
+    public void aboveThresholdSeekableSourceFrom() throws IOException {
+        try {
             System.setProperty(SeekableSources.MAPPED_SIZE_THRESHOLD_PROPERTY, "10");
             Path tempFile = Files.createTempFile("SejdaIO", null);
             Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
                     StandardCopyOption.REPLACE_EXISTING);
-            assertNotNull(SeekableSources.seekableSourceFrom(tempFile.toFile()));
-        }
-        finally
-        {
+            SeekableSource source = SeekableSources.seekableSourceFrom(tempFile.toFile());
+            assertNotNull(source);
+            assertTrue(source instanceof BufferedSeekableSource);
+            assertTrue(((BufferedSeekableSource) source).wrapped() instanceof MemoryMappedSeekableSource);
+        } finally {
             System.getProperties().remove(SeekableSources.MAPPED_SIZE_THRESHOLD_PROPERTY);
         }
     }
 
     @Test
-    public void inMemorySeekableSourceFromBytes()
-    {
+    public void disableMemoryMapped() throws IOException {
+        try {
+            System.setProperty(SeekableSources.MAPPED_SIZE_THRESHOLD_PROPERTY, "10");
+            System.setProperty(SeekableSources.DISABLE_MEMORY_MAPPED_PROPERTY, "true");
+            Path tempFile = Files.createTempFile("SejdaIO", null);
+            Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
+                    StandardCopyOption.REPLACE_EXISTING);
+            SeekableSource source = SeekableSources.seekableSourceFrom(tempFile.toFile());
+            assertNotNull(source);
+            assertTrue(source instanceof BufferedSeekableSource);
+            assertTrue(((BufferedSeekableSource) source).wrapped() instanceof FileChannelSeekableSource);
+        } finally {
+            System.getProperties().remove(SeekableSources.MAPPED_SIZE_THRESHOLD_PROPERTY);
+            System.getProperties().remove(SeekableSources.DISABLE_MEMORY_MAPPED_PROPERTY);
+        }
+    }
+
+    @Test
+    public void inMemorySeekableSourceFromBytes() {
         assertNotNull(SeekableSources.inMemorySeekableSourceFrom(new byte[] { -1 }));
     }
 
     @Test
-    public void inMemorySeekableSourceFromStream() throws IOException
-    {
-        assertNotNull(SeekableSources.inMemorySeekableSourceFrom(getClass().getResourceAsStream(
-"/pdf/simple_test.pdf")));
+    public void inMemorySeekableSourceFromStream() throws IOException {
+        assertNotNull(
+                SeekableSources.inMemorySeekableSourceFrom(getClass().getResourceAsStream("/pdf/simple_test.pdf")));
     }
 
     @Test
-    public void onTempFileSeekableSourceFrom() throws IOException
-    {
-        assertNotNull(SeekableSources.onTempFileSeekableSourceFrom(new ByteArrayInputStream(
-                new byte[] { -1 })));
+    public void onTempFileSeekableSourceFrom() throws IOException {
+        assertNotNull(SeekableSources.onTempFileSeekableSourceFrom(new ByteArrayInputStream(new byte[] { -1 })));
     }
 
 }

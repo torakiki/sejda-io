@@ -37,9 +37,13 @@ import org.apache.commons.io.IOUtils;
 public final class SeekableSources {
 
     /**
-     * Threshold size in bytes where the SeekableSources method with switch to {@link MemoryMappedSeekableSource#MemoryMappedSeekableSource(File)}
+     * Threshold size in bytes where the SeekableSources method will switch to {@link MemoryMappedSeekableSource#MemoryMappedSeekableSource(File)}
      */
     public static final String MAPPED_SIZE_THRESHOLD_PROPERTY = "org.sejda.io.mapped.size.threshold";
+    /**
+     * Threshold size in bytes where the SeekableSources method will switch to {@link MemoryMappedSeekableSource#MemoryMappedSeekableSource(File)}
+     */
+    public static final String DISABLE_MEMORY_MAPPED_PROPERTY = "org.sejda.io.mapped.disabled";
     /**
      * Buffer size for {@link BufferedSeekableSource}
      */
@@ -65,7 +69,8 @@ public final class SeekableSources {
      */
     public static SeekableSource seekableSourceFrom(File file) throws IOException {
         requireNonNull(file);
-        if (file.length() > Long.getLong(MAPPED_SIZE_THRESHOLD_PROPERTY, MB_16)) {
+        if (!Boolean.getBoolean(DISABLE_MEMORY_MAPPED_PROPERTY)
+                && file.length() > Long.getLong(MAPPED_SIZE_THRESHOLD_PROPERTY, MB_16)) {
             return new BufferedSeekableSource(new MemoryMappedSeekableSource(file));
         }
         return new BufferedSeekableSource(new FileChannelSeekableSource(file));

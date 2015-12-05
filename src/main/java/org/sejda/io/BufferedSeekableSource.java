@@ -33,8 +33,8 @@ import org.sejda.util.IOUtils;
  */
 public class BufferedSeekableSource extends BaseSeekableSource {
 
-    private ByteBuffer buffer = ByteBuffer.allocate(Integer
-            .getInteger(SeekableSources.INPUT_BUFFER_SIZE_PROPERTY, 8192));
+    private ByteBuffer buffer = ByteBuffer
+            .allocate(Integer.getInteger(SeekableSources.INPUT_BUFFER_SIZE_PROPERTY, 8192));
     private SeekableSource wrapped;
     private long position;
     private long size;
@@ -111,6 +111,10 @@ public class BufferedSeekableSource extends BaseSeekableSource {
             buffer.flip();
         }
         return buffer.remaining();
+    }
+
+    protected SeekableSource wrapped() {
+        return wrapped;
     }
 
     @Override
