@@ -27,46 +27,39 @@ import java.nio.ByteBuffer;
 
 import org.junit.After;
 import org.junit.Test;
-import org.sejda.io.SeekableSource;
 import org.sejda.util.IOUtils;
 
 /**
  * @author Andrea Vacondio
  *
  */
-public abstract class BaseTestSeekableSource
-{
+public abstract class BaseTestSeekableSource {
 
     abstract SeekableSource victim();
 
     @After
-    public void tearDown() throws IOException
-    {
+    public void tearDown() throws IOException {
         IOUtils.close(victim());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void illegalPosition() throws IOException
-    {
+    public void illegalPosition() throws IOException {
         victim().position(-10);
     }
 
     @Test(expected = IllegalStateException.class)
-    public void viewClosed() throws IOException
-    {
+    public void viewClosed() throws IOException {
         victim().close();
         victim().view(0, 2);
     }
 
     @Test
-    public void view() throws IOException
-    {
+    public void view() throws IOException {
         assertNotNull(victim().view(0, 2));
     }
 
     @Test
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         victim().read();
         assertTrue(victim().isOpen());
         victim().close();
@@ -74,60 +67,65 @@ public abstract class BaseTestSeekableSource
     }
 
     @Test(expected = IllegalStateException.class)
-    public void readClosed() throws IOException
-    {
+    public void readClosed() throws IOException {
         victim().close();
         victim().read();
     }
 
     @Test(expected = IllegalStateException.class)
-    public void readByteBuffClosed() throws IOException
-    {
+    public void readByteBuffClosed() throws IOException {
         victim().close();
         victim().read(ByteBuffer.allocate(5));
     }
 
     @Test
-    public void forward() throws IOException
-    {
+    public void forward() throws IOException {
         assertEquals(0, victim().position());
         assertEquals(1, victim().forward(1).position());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void invalidForward() throws IOException
-    {
+    public void invalidForward() throws IOException {
         assertEquals(0, victim().position());
         victim().forward(victim().size() + 1);
     }
 
     @Test
-    public void back() throws IOException
-    {
+    public void back() throws IOException {
         assertEquals(1, victim().forward(1).position());
         assertEquals(0, victim().back().position());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void invalidBack() throws IOException
-    {
+    public void invalidBack() throws IOException {
         assertEquals(0, victim().position());
         victim().back();
     }
 
     @Test
-    public void peek() throws IOException
-    {
+    public void peek() throws IOException {
         assertEquals(0, victim().position());
         assertNotEquals(-1, victim().peek());
         assertEquals(0, victim().position());
     }
 
     @Test
-    public void peekEOF() throws IOException
-    {
+    public void peekEOF() throws IOException {
         victim().position(victim().size());
         assertEquals(-1, victim().peek());
+    }
+
+    @Test
+    public void peekBack() throws IOException {
+        victim().position(victim().size());
+        assertNotEquals(-1, victim().peekBack());
+        assertEquals(victim().size(), victim().position());
+    }
+
+    @Test
+    public void peekBackBeginning() throws IOException {
+        assertEquals(0, victim().position());
+        assertEquals(-1, victim().peekBack());
     }
 
 }

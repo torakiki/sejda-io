@@ -81,8 +81,8 @@ public interface SeekableSource extends ReadableByteChannel {
     default SeekableSource back(long offset) throws IOException {
         long newPosition = position() - offset;
         if (newPosition < 0 || newPosition > size()) {
-            throw new IllegalArgumentException("Going back would move to " + newPosition
-                    + ", outside of source boundaries");
+            throw new IllegalArgumentException(
+                    "Going back would move to " + newPosition + ", outside of source boundaries");
         }
         position(newPosition);
         return this;
@@ -125,6 +125,21 @@ public interface SeekableSource extends ReadableByteChannel {
             back(1);
         }
         return val;
+    }
+
+    /**
+     * Reads the previous byte and sets the position back where it was.
+     * 
+     * @return the previous byte or {@code -1} if we are at the beginning of the source.
+     * @throws IOException
+     * @see #read()
+     */
+    default int peekBack() throws IOException {
+        if(position()>0){
+            back(1);
+            return read();
+        }
+        return -1;
     }
 
     /**
