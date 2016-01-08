@@ -23,11 +23,9 @@ import static org.sejda.util.RequireUtils.requireState;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.sejda.util.IOUtils;
-
 /**
- * {@link SeekableSource} representing a view over a portion of a {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed and the parent view
- * is closed when the view is closed. The parent position is modified when a read method is called on the view.
+ * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed. The parent
+ * position is modified when a read method is called on the view.
  * 
  * @author Andrea Vacondio
  *
@@ -107,7 +105,6 @@ public class SeekableSourceView extends BaseSeekableSource {
     @Override
     public void close() throws IOException {
         super.close();
-        IOUtils.close(wrapped);
         this.currentPosition = 0;
     }
 

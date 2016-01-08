@@ -35,14 +35,12 @@ import org.junit.Test;
  * @author Andrea Vacondio
  *
  */
-public class SeekableSourceViewTest extends BaseTestSeekableSource
-{
+public class SeekableSourceViewTest extends BaseTestSeekableSource {
     private SeekableSourceView victim;
     private Path tempFile;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         tempFile = Files.createTempFile("SejdaIO", null);
         Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
                 StandardCopyOption.REPLACE_EXISTING);
@@ -50,66 +48,55 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource
     }
 
     @After
-    public void after() throws IOException
-    {
+    public void after() throws IOException {
         Files.deleteIfExists(tempFile);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void nullSourceConstructor()
-    {
+    public void nullSourceConstructor() {
         new SeekableSourceView(null, 50, 100);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void negativeStartPositionConstructor()
-    {
+    public void negativeStartPositionConstructor() {
         new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1 }), -10, 100);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void outOfBoundsStartPositionConstructor()
-    {
+    public void outOfBoundsStartPositionConstructor() {
         new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1, 2 }), 3, 100);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void nullNonPositiveLengthConstructor()
-    {
+    public void nullNonPositiveLengthConstructor() {
         new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1 }), 0, 0);
     }
 
     @Test
-    public void size()
-    {
+    public void size() {
         assertEquals(100, victim.size());
     }
 
     @Test
-    public void sizeTrimmed()
-    {
-        assertEquals(2, new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1, 2 }),
-                0, 100).size());
+    public void sizeTrimmed() {
+        assertEquals(2, new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1, 2 }), 0, 100).size());
     }
 
     @Override
     @Test(expected = RuntimeException.class)
-    public void view() throws IOException
-    {
+    public void view() throws IOException {
         victim().view(0, 2);
     }
 
     @Override
     @Test(expected = RuntimeException.class)
-    public void viewClosed() throws IOException
-    {
+    public void viewClosed() throws IOException {
         victim().close();
         victim().view(0, 2);
     }
 
     @Test(expected = IllegalStateException.class)
-    public void parentClosed() throws IOException
-    {
+    public void parentClosed() throws IOException {
         ByteArraySeekableSource wrapped = new ByteArraySeekableSource(new byte[] { -1 });
         victim = new SeekableSourceView(wrapped, 0, 1);
         wrapped.close();
@@ -117,15 +104,21 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource
         victim.read();
     }
 
+    @Test
+    public void closeDoesntCloseParent() throws IOException {
+        ByteArraySeekableSource wrapped = new ByteArraySeekableSource(new byte[] { -1 });
+        victim = new SeekableSourceView(wrapped, 0, 1);
+        victim.close();
+        assertTrue(wrapped.isOpen());
+    }
+
     @Override
-    SeekableSource victim()
-    {
+    SeekableSource victim() {
         return victim;
     }
 
     @Test
-    public void read() throws IOException
-    {
+    public void read() throws IOException {
         assertEquals(0, victim.position());
         assertNotNull(victim.read());
         assertNotNull(victim.read());
@@ -135,8 +128,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void readBuff() throws IOException
-    {
+    public void readBuff() throws IOException {
         victim.position(1);
         ByteBuffer dst = ByteBuffer.allocate(10);
         victim.read(dst);

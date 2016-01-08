@@ -64,7 +64,9 @@ public interface SeekableSource extends ReadableByteChannel {
     /**
      * @param startingPosition
      * @param length
-     * @return a readable view of a portion of this {@link SeekableSource}. Reading from this view doesn't affect this {@link SeekableSource} position.
+     * @return a readable view of a portion of this {@link SeekableSource}. Reading from the view doesn't affect the {@link SeekableSource} position. Closing the
+     *         {@link SeekableSource} makes all the views unreadable but closing the view has no effect on the {@link SeekableSource}. A view may or may not work on a thread bound
+     *         copy of the {@link SeekableSource} so as a general rule it should not be created and handed to other threads..
      * @throws IOException
      *             if something goes wrong while creating the view
      */
@@ -135,7 +137,7 @@ public interface SeekableSource extends ReadableByteChannel {
      * @see #read()
      */
     default int peekBack() throws IOException {
-        if(position()>0){
+        if (position() > 0) {
             back(1);
             return read();
         }

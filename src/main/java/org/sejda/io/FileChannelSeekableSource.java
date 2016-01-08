@@ -36,6 +36,8 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
     private FileChannel channel;
     private File file;
     private long size;
+    private ThreadBoundCopiesSupplier<FileChannelSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
+            () -> new FileChannelSeekableSource(file));
 
     public FileChannelSeekableSource(File file) throws IOException {
         super(ofNullable(file).map(File::getAbsolutePath).orElseThrow(() -> {
@@ -66,6 +68,7 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
     @Override
     public void close() throws IOException {
         super.close();
+        IOUtils.close(localCopiesSupplier);
         IOUtils.close(channel);
     }
 
@@ -89,6 +92,6 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
     @Override
     public SeekableSource view(long startingPosition, long length) throws IOException {
         requireOpen();
-        return new SeekableSourceView(new FileChannelSeekableSource(this.file), startingPosition, length);
+        return new SeekableSourceView(localCopiesSupplier.get(), startingPosition, length);
     }
 }

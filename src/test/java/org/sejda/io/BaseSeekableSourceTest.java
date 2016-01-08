@@ -42,13 +42,13 @@ public class BaseSeekableSourceTest
         victim = new BaseSeekableSource("id")
         {
             @Override
-            public int read(ByteBuffer dst) throws IOException
+            public int read(ByteBuffer dst) 
             {
                 return 0;
             }
 
             @Override
-            public SeekableSource view(long startingPosition, long length) throws IOException
+            public SeekableSource view(long startingPosition, long length) 
             {
                 return null;
             }
@@ -60,19 +60,19 @@ public class BaseSeekableSourceTest
             }
 
             @Override
-            public int read() throws IOException
+            public int read()
             {
                 return 0;
             }
 
             @Override
-            public SeekableSource position(long position) throws IOException
+            public SeekableSource position(long position) 
             {
                 return null;
             }
 
             @Override
-            public long position() throws IOException
+            public long position() 
             {
                 return 0;
             }
@@ -88,7 +88,7 @@ public class BaseSeekableSourceTest
     }
 
     @Test
-    public void requireOpen() throws IOException
+    public void requireOpen() 
     {
         assertTrue(victim.isOpen());
         victim.requireOpen();

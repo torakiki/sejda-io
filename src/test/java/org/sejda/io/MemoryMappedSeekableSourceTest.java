@@ -29,9 +29,6 @@ import java.nio.file.StandardCopyOption;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.sejda.io.MemoryMappedSeekableSource;
-import org.sejda.io.SeekableSource;
-import org.sejda.io.SeekableSources;
 
 public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource
 {
@@ -61,7 +58,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void read() throws IOException
+    public void read() 
     {
         assertEquals(0, victim.position());
         assertNotNull(victim.read());
@@ -94,7 +91,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void readBuff() throws IOException
+    public void readBuff() 
     {
         ByteBuffer dst = ByteBuffer.allocate(20);
         victim.read(dst);

@@ -19,13 +19,10 @@ package org.sejda.io;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.sejda.io.ByteArraySeekableSource;
-import org.sejda.io.SeekableSource;
 
 /**
  * @author Andrea Vacondio
@@ -49,7 +46,7 @@ public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void read() throws IOException
+    public void read() 
     {
         assertEquals(97, victim.read());
         assertEquals(1, victim.position());
@@ -62,7 +59,7 @@ public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void readBuff() throws IOException
+    public void readBuff() 
     {
         victim.position(1);
         ByteBuffer dst = ByteBuffer.allocate(10);
@@ -78,7 +75,7 @@ public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void position() throws IOException
+    public void position() 
     {
         assertEquals(0, victim.position());
         assertEquals(97, victim.read());

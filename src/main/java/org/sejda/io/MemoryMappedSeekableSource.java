@@ -28,24 +28,27 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sejda.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination algorithm allowing to
- * open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY} systm property.
+ * open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY} system property.
  * 
  * @author Andrea Vacondio
  *
  */
 public class MemoryMappedSeekableSource extends BaseSeekableSource {
     private static final Logger LOG = LoggerFactory.getLogger(MemoryMappedSeekableSource.class);
-    private static final long MB_500 = 1 << 29;
+    private static final long MB_256 = 1 << 28;
 
-    private final long pageSize = Long.getLong(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, MB_500);
+    private final long pageSize = Long.getLong(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, MB_256);
     private List<ByteBuffer> pages = new ArrayList<>();
     private long position;
     private long size;
+    private ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
+            () -> new MemoryMappedSeekableSource(this));
 
     public MemoryMappedSeekableSource(File file) throws IOException {
         super(ofNullable(file).map(File::getAbsolutePath).orElseThrow(() -> {
@@ -142,13 +145,14 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     @Override
     public void close() throws IOException {
         super.close();
+        IOUtils.close(localCopiesSupplier);
         pages.clear();
     }
 
     @Override
     public SeekableSource view(long startingPosition, long length) throws IOException {
         requireOpen();
-        return new SeekableSourceView(new MemoryMappedSeekableSource(this), startingPosition, length);
+        return new SeekableSourceView(localCopiesSupplier.get(), startingPosition, length);
     }
 
 }

@@ -63,7 +63,7 @@ public class RequireUtilsTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void faseState() throws IOException {
+    public void falseState() {
         requireState(false, "message");
     }
 
