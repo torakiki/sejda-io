@@ -147,7 +147,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.12</version>
+			<version>1.7.16</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -157,7 +157,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.1.3</version>
+			<version>1.1.5</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
