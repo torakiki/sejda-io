@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.Charsets;
 import org.sejda.util.IOUtils;
@@ -70,7 +71,7 @@ public class BufferedCountingChannelWriter implements Closeable {
      * @throws IOException
      */
     public void write(String value) throws IOException {
-        write(value.getBytes(Charsets.ISO_8859_1));
+        write(value.getBytes(StandardCharsets.ISO_8859_1));
     }
 
     /**
