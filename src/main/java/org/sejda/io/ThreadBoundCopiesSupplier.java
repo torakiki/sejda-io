@@ -31,18 +31,18 @@ import org.sejda.util.IOUtils;
  * 
  * @author Andrea Vacondio
  */
-class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable {
+public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable {
 
     private ConcurrentMap<Long, T> copies = new ConcurrentHashMap<>();
 
     private final SeekableSourceSupplier<T> supplier;
 
-    ThreadBoundCopiesSupplier(SeekableSourceSupplier<T> supplier) {
+    public ThreadBoundCopiesSupplier(SeekableSourceSupplier<T> supplier) {
         requireNonNull(supplier);
         this.supplier = supplier;
     }
 
-    T get() throws IOException {
+    public T get() throws IOException {
         long id = Thread.currentThread().getId();
         T copy = copies.get(id);
         if (isNull(copy)) {
@@ -57,11 +57,8 @@ class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable {
         return copy;
     }
 
+    @Override
     public void close() {
         copies.values().stream().forEach(IOUtils::closeQuietly);
-    }
-
-    interface SeekableSourceSupplier<T> {
-        T supply() throws IOException;
     }
 }

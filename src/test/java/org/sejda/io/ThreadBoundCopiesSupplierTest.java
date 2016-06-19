@@ -31,7 +31,6 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 import org.junit.Test;
-import org.sejda.io.ThreadBoundCopiesSupplier.SeekableSourceSupplier;
 
 /**
  * @author Andrea Vacondio
