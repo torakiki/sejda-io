@@ -49,8 +49,9 @@ public abstract class BaseSeekableSource implements SeekableSource {
     /**
      * @throws IllegalStateException
      *             if the source is closed
+     * @throws IOException
      */
-    protected void requireOpen() {
+    protected void requireOpen() throws IOException {
         requireState(isOpen(), "The SeekableSource has been closed");
     }
 

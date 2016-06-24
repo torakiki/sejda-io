@@ -88,7 +88,7 @@ public class BaseSeekableSourceTest
     }
 
     @Test
-    public void requireOpen() 
+    public void requireOpen() throws IOException 
     {
         assertTrue(victim.isOpen());
         victim.requireOpen();

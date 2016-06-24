@@ -94,7 +94,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     }
 
     @Override
-    public int read(ByteBuffer dst) {
+    public int read(ByteBuffer dst) throws IOException {
         requireOpen();
         int zeroBasedPagesNumber = (int) (position() / pageSize);
         ByteBuffer page = pages.get(zeroBasedPagesNumber);
@@ -130,7 +130,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     }
 
     @Override
-    public int read() {
+    public int read() throws IOException {
         requireOpen();
         int zeroBasedPagesNumber = (int) (position() / pageSize);
         ByteBuffer page = pages.get(zeroBasedPagesNumber);
@@ -152,7 +152,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     @Override
     public SeekableSource view(long startingPosition, long length) throws IOException {
         requireOpen();
-        return new SeekableSourceView(localCopiesSupplier.get(), startingPosition, length);
+        return new SeekableSourceView(localCopiesSupplier, id(), startingPosition, length);
     }
 
 }

@@ -51,7 +51,7 @@ public class ThreadBoundCopiesSupplierTest {
     public void differentCopyPerThread() throws IOException, InterruptedException, ExecutionException {
         SeekableSourceSupplier<ByteArraySeekableSource> supplier = spy(
                 new SeekableSourceSupplier<ByteArraySeekableSource>() {
-                    public ByteArraySeekableSource supply() {
+                    public ByteArraySeekableSource get() {
                         return new ByteArraySeekableSource(new byte[0]);
                     }
                 });
@@ -73,7 +73,7 @@ public class ThreadBoundCopiesSupplierTest {
     public void sameThreadSameCopy() throws IOException, InterruptedException, ExecutionException {
         SeekableSourceSupplier<ByteArraySeekableSource> supplier = spy(
                 new SeekableSourceSupplier<ByteArraySeekableSource>() {
-                    public ByteArraySeekableSource supply() {
+                    public ByteArraySeekableSource get() {
                         return new ByteArraySeekableSource(new byte[0]);
                     }
                 });

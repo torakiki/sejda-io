@@ -23,5 +23,5 @@ import java.io.IOException;
  */
 @FunctionalInterface
 public interface SeekableSourceSupplier<T extends SeekableSource> {
-    T supply() throws IOException;
+    T get() throws IOException;
 }

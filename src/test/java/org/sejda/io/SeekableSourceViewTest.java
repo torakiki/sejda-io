@@ -44,7 +44,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
         tempFile = Files.createTempFile("SejdaIO", null);
         Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
                 StandardCopyOption.REPLACE_EXISTING);
-        victim = new SeekableSourceView(new FileChannelSeekableSource(tempFile.toFile()), 50, 100);
+        victim = new SeekableSourceView(() -> new FileChannelSeekableSource(tempFile.toFile()), "id", 50, 100);
     }
 
     @After
@@ -53,23 +53,23 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void nullSourceConstructor() {
-        new SeekableSourceView(null, 50, 100);
+    public void nullSourceConstructor() throws IOException {
+        new SeekableSourceView(null, "id", 50, 100);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void negativeStartPositionConstructor() {
-        new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1 }), -10, 100);
+    public void negativeStartPositionConstructor() throws IOException {
+        new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1 }), "id", -10, 100);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void outOfBoundsStartPositionConstructor() {
-        new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1, 2 }), 3, 100);
+    public void outOfBoundsStartPositionConstructor() throws IOException {
+        new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1, 2 }), "id", 3, 100);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void nullNonPositiveLengthConstructor() {
-        new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1 }), 0, 0);
+    public void nullNonPositiveLengthConstructor() throws IOException {
+        new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1 }), "id", 0, 0);
     }
 
     @Test
@@ -78,8 +78,9 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     }
 
     @Test
-    public void sizeTrimmed() {
-        assertEquals(2, new SeekableSourceView(new ByteArraySeekableSource(new byte[] { -1, 2 }), 0, 100).size());
+    public void sizeTrimmed() throws IOException {
+        assertEquals(2,
+                new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1, 2 }), "id", 0, 100).size());
     }
 
     @Override
@@ -98,7 +99,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     @Test(expected = IllegalStateException.class)
     public void parentClosed() throws IOException {
         ByteArraySeekableSource wrapped = new ByteArraySeekableSource(new byte[] { -1 });
-        victim = new SeekableSourceView(wrapped, 0, 1);
+        victim = new SeekableSourceView(() -> wrapped, "id", 0, 1);
         wrapped.close();
         assertTrue(victim.isOpen());
         victim.read();
@@ -107,7 +108,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     @Test
     public void closeDoesntCloseParent() throws IOException {
         ByteArraySeekableSource wrapped = new ByteArraySeekableSource(new byte[] { -1 });
-        victim = new SeekableSourceView(wrapped, 0, 1);
+        victim = new SeekableSourceView(() -> wrapped, "id", 0, 1);
         victim.close();
         assertTrue(wrapped.isOpen());
     }

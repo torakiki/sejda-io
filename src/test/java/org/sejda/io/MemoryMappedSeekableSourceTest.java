@@ -58,7 +58,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void read() 
+    public void read() throws IOException 
     {
         assertEquals(0, victim.position());
         assertNotNull(victim.read());
@@ -91,7 +91,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void readBuff() 
+    public void readBuff() throws IOException 
     {
         ByteBuffer dst = ByteBuffer.allocate(20);
         victim.read(dst);

@@ -16,36 +16,37 @@
  */
 package org.sejda.io;
 
-import static java.util.Optional.ofNullable;
 import static org.sejda.util.RequireUtils.requireArg;
+import static org.sejda.util.RequireUtils.requireNotNullArg;
 import static org.sejda.util.RequireUtils.requireState;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed. The parent
- * position is modified when a read method is called on the view.
+ * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed. The view
+ * works on a thread local copy of the parent source so the parent position is not modified when a read method is called on the view.
  * 
  * @author Andrea Vacondio
- *
  */
-public class SeekableSourceView extends BaseSeekableSource {
+class SeekableSourceView extends BaseSeekableSource {
     private long startingPosition;
     private long length;
     private long currentPosition;
-    private SeekableSource wrapped;
+    private SeekableSourceSupplier<? extends SeekableSource> supplier;
 
-    public SeekableSourceView(SeekableSource wrapped, long startingPosition, long length) {
-        super(ofNullable(wrapped).map(SeekableSource::id).orElseThrow(() -> {
-            return new IllegalArgumentException("Input decorated SeekableSource cannot be null");
-        }));
-        requireArg(startingPosition >= 0 && startingPosition < wrapped.size(), "Starting position cannot be negative");
+    public SeekableSourceView(SeekableSourceSupplier<? extends SeekableSource> supplier, String id,
+            long startingPosition, long length) throws IOException {
+        super(id);
+        requireArg(startingPosition >= 0, "Starting position cannot be negative");
         requireArg(length > 0, "View length must be positive");
+        requireNotNullArg(supplier, "Input decorated SeekableSource cannot be null");
         this.startingPosition = startingPosition;
         this.currentPosition = 0;
+        SeekableSource wrapped = supplier.get();
+        requireArg(startingPosition < wrapped.size(), "Starting position cannot be higher then wrapped source size");
         this.length = Math.min(length, wrapped.size() - startingPosition);
-        this.wrapped = wrapped;
+        this.supplier = supplier;
     }
 
     @Override
@@ -55,6 +56,7 @@ public class SeekableSourceView extends BaseSeekableSource {
 
     @Override
     public SeekableSource position(long newPosition) throws IOException {
+        SeekableSource wrapped = supplier.get();
         requireArg(newPosition >= 0, "Cannot set position to a negative value");
         this.currentPosition = Math.min(length, newPosition);
         wrapped.position(startingPosition + currentPosition);
@@ -68,6 +70,7 @@ public class SeekableSourceView extends BaseSeekableSource {
 
     @Override
     public int read(ByteBuffer dst) throws IOException {
+        SeekableSource wrapped = supplier.get();
         requireOpen();
         if (hasAvailable()) {
             wrapped.position(startingPosition + currentPosition);
@@ -86,6 +89,7 @@ public class SeekableSourceView extends BaseSeekableSource {
     @Override
     public int read() throws IOException {
         requireOpen();
+        SeekableSource wrapped = supplier.get();
         if (hasAvailable()) {
             wrapped.position(startingPosition + currentPosition);
             currentPosition++;
@@ -109,8 +113,9 @@ public class SeekableSourceView extends BaseSeekableSource {
     }
 
     @Override
-    protected void requireOpen() {
+    protected void requireOpen() throws IOException {
         super.requireOpen();
+        SeekableSource wrapped = supplier.get();
         requireState(wrapped.isOpen(), "The original SeekableSource has been closed");
     }
 

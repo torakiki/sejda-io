@@ -92,6 +92,6 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
     @Override
     public SeekableSource view(long startingPosition, long length) throws IOException {
         requireOpen();
-        return new SeekableSourceView(localCopiesSupplier.get(), startingPosition, length);
+        return new SeekableSourceView(localCopiesSupplier, id(), startingPosition, length);
     }
 }
