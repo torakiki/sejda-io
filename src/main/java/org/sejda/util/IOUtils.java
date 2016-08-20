@@ -21,7 +21,9 @@ package org.sejda.util;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 
+import org.sejda.io.FastByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,5 +64,16 @@ public final class IOUtils {
         } catch (IOException ioe) {
             LOG.warn("An error occured while closing a Closeable resource", ioe);
         }
+    }
+
+    /**
+     * @param input
+     * @return the content of the input stream as a byte[]
+     * @throws IOException
+     */
+    public static byte[] toByteArray(InputStream input) throws IOException {
+        FastByteArrayOutputStream output = new FastByteArrayOutputStream();
+        org.apache.commons.io.IOUtils.copy(input, output);
+        return output.toByteArray();
     }
 }
