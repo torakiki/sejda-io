@@ -61,7 +61,7 @@ public final class SeekableSources {
 
     /**
      * Factory method to create a {@link SeekableSource} from a {@link File}. An attempt is made to return the best {@link SeekableSource} implementation based on the size of the
-     * file.
+     * file and bitness of the JVM.
      * 
      * @param file
      * @return a {@link SeekableSource} from the given file.
@@ -69,7 +69,8 @@ public final class SeekableSources {
      */
     public static SeekableSource seekableSourceFrom(File file) throws IOException {
         requireNonNull(file);
-        if (!Boolean.getBoolean(DISABLE_MEMORY_MAPPED_PROPERTY)
+        if (!"32".equals(System.getProperty("sun.arch.data.model"))
+                && !Boolean.getBoolean(DISABLE_MEMORY_MAPPED_PROPERTY)
                 && file.length() > Long.getLong(MAPPED_SIZE_THRESHOLD_PROPERTY, MB_16)) {
             return new BufferedSeekableSource(new MemoryMappedSeekableSource(file));
         }

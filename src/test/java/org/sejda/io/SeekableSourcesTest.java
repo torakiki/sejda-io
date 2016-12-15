@@ -26,6 +26,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -35,6 +37,19 @@ import org.junit.rules.TemporaryFolder;
  *
  */
 public class SeekableSourcesTest {
+
+    private static String BITNESS;
+
+    @BeforeClass
+    public static void before() {
+        BITNESS = System.getProperty("sun.arch.data.model");
+        System.setProperty("sun.arch.data.model", "64");
+    }
+
+    @AfterClass
+    public static void after() {
+        System.setProperty("sun.arch.data.model", BITNESS);
+    }
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
@@ -95,6 +110,24 @@ public class SeekableSourcesTest {
         } finally {
             System.getProperties().remove(SeekableSources.MAPPED_SIZE_THRESHOLD_PROPERTY);
             System.getProperties().remove(SeekableSources.DISABLE_MEMORY_MAPPED_PROPERTY);
+        }
+    }
+
+    @Test
+    public void nonMappedMemoryFor32bits() throws IOException {
+        try {
+            System.setProperty(SeekableSources.MAPPED_SIZE_THRESHOLD_PROPERTY, "10");
+            System.setProperty("sun.arch.data.model", "32");
+            Path tempFile = Files.createTempFile("SejdaIO", null);
+            Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
+                    StandardCopyOption.REPLACE_EXISTING);
+            SeekableSource source = SeekableSources.seekableSourceFrom(tempFile.toFile());
+            assertNotNull(source);
+            assertTrue(source instanceof BufferedSeekableSource);
+            assertTrue(((BufferedSeekableSource) source).wrapped() instanceof FileChannelSeekableSource);
+        } finally {
+            System.getProperties().remove(SeekableSources.MAPPED_SIZE_THRESHOLD_PROPERTY);
+            System.setProperty("sun.arch.data.model", BITNESS);
         }
     }
 
