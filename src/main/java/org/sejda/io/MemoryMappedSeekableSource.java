@@ -146,6 +146,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     public void close() throws IOException {
         super.close();
         IOUtils.close(localCopiesSupplier);
+        pages.stream().forEach(IOUtils::unmap);
         pages.clear();
     }
 
