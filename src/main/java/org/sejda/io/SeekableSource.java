@@ -39,7 +39,7 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * Sets the source position. Setting the position to a value that is greater than the source's size is legal but does not change the size of the source. A later attempt to read
-     * bytes at such a position will immediately
+     * bytes at such a position will immediately return an end-of-file indication.
      * 
      * @param position
      *            a non-negative long for the new position
