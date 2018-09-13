@@ -21,4 +21,5 @@ module org.sejda.io {
     exports org.sejda.io;
 
     requires org.slf4j;
+    requires jdk.unsupported;
 }

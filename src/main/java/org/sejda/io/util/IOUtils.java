@@ -50,8 +50,8 @@ public final class IOUtils {
     private static final Optional<Consumer<ByteBuffer>> UNMAPPER;
 
     static {
-        UNMAPPER = Optional
-                .ofNullable(AccessController.doPrivileged((PrivilegedAction<Consumer<ByteBuffer>>) IOUtils::unmapper));
+        UNMAPPER = Optional.ofNullable(
+                AccessController.doPrivileged((PrivilegedAction<Consumer<ByteBuffer>>) IOUtils::unmapper));
     }
 
     private IOUtils() {
@@ -106,13 +106,11 @@ public final class IOUtils {
      * @param buf
      */
     public static void unmap(ByteBuffer buf) {
-        UNMAPPER.ifPresent(u -> {
-            try {
-                u.accept(buf);
-            } catch (Exception e) {
-                LOG.error("Unable to unmap ByteBuffer.", e);
-            }
-        });
+        try {
+            UNMAPPER.ifPresent(u -> u.accept(buf));
+        } catch (Exception e) {
+            LOG.error("Unable to unmap ByteBuffer.", e);
+        }
     }
 
     /**
@@ -153,9 +151,8 @@ public final class IOUtils {
                  * needs ELSE } }
                  */
                 final MethodHandle cleanMethod = lookup.findVirtual(cleanerClass, "clean", methodType(void.class));
-                final MethodHandle nonNullTest = lookup
-                        .findStatic(Objects.class, "nonNull", methodType(boolean.class, Object.class))
-                        .asType(methodType(boolean.class, cleanerClass));
+                final MethodHandle nonNullTest = lookup.findStatic(Objects.class, "nonNull",
+                        methodType(boolean.class, Object.class)).asType(methodType(boolean.class, cleanerClass));
                 final MethodHandle noop = dropArguments(constant(Void.class, null).asType(methodType(void.class)), 0,
                         cleanerClass);
                 final MethodHandle unmapper = filterReturnValue(directBufferCleanerMethod,
