@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.sejda.util;
+package org.sejda.io.util;
 
-import static org.sejda.util.RequireUtils.requireArg;
-import static org.sejda.util.RequireUtils.requireIOCondition;
-import static org.sejda.util.RequireUtils.requireNotBlank;
-import static org.sejda.util.RequireUtils.requireNotNullArg;
-import static org.sejda.util.RequireUtils.requireState;
+import static org.sejda.io.util.RequireUtils.requireArg;
+import static org.sejda.io.util.RequireUtils.requireIOCondition;
+import static org.sejda.io.util.RequireUtils.requireNotBlank;
+import static org.sejda.io.util.RequireUtils.requireNotNullArg;
+import static org.sejda.io.util.RequireUtils.requireState;
 
 import java.io.IOException;
 

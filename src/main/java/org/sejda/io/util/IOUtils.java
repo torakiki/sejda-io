@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.sejda.util;
+package org.sejda.io.util;
 
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
@@ -94,13 +94,13 @@ public final class IOUtils {
      */
     public static byte[] toByteArray(InputStream input) throws IOException {
         FastByteArrayOutputStream output = new FastByteArrayOutputStream();
-        org.apache.commons.io.IOUtils.copy(input, output);
+        input.transferTo(output);
         return output.toByteArray();
     }
 
     /**
      * Unmap memory mapped byte buffers. This is a hack waiting for a proper JVM provided solution expected in java 10 https://bugs.openjdk.java.net/browse/JDK-4724038 The issue
-     * here is that even when closed, memory mapped byte buffers hold a lock on the underlying file until GC is executes and this in turns result in an error if the user tries to
+     * here is that even when closed, memory mapped byte buffers hold a lock on the underlying file until GC is executed and this in turns result in an error if the user tries to
      * move or delete the file.
      * 
      * @param buf

@@ -16,7 +16,7 @@
 package org.sejda.io;
 
 import static java.util.Optional.ofNullable;
-import static org.sejda.util.RequireUtils.requireArg;
+import static org.sejda.io.util.RequireUtils.requireArg;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.sejda.util.IOUtils;
+import org.sejda.io.util.IOUtils;
 
 /**
  * A {@link SeekableSource} implementation based on {@link FileChannel}.

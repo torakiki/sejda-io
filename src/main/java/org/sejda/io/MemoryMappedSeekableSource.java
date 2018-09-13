@@ -16,7 +16,7 @@
 package org.sejda.io;
 
 import static java.util.Optional.ofNullable;
-import static org.sejda.util.RequireUtils.requireArg;
+import static org.sejda.io.util.RequireUtils.requireArg;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sejda.util.IOUtils;
+import org.sejda.io.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

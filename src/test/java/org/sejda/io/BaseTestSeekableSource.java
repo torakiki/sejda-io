@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 
 import org.junit.After;
 import org.junit.Test;
-import org.sejda.util.IOUtils;
+import org.sejda.io.util.IOUtils;
 
 /**
  * @author Andrea Vacondio

@@ -15,7 +15,7 @@
  */
 package org.sejda.io;
 
-import static org.sejda.util.RequireUtils.requireNotNullArg;
+import static org.sejda.io.util.RequireUtils.requireNotNullArg;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -25,8 +25,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.Charsets;
-import org.sejda.util.IOUtils;
+import org.sejda.io.util.IOUtils;
 
 /**
  * Component providing methods to write to a {@link CountingWritableByteChannel}. This implementation is buffered and bytes are flushed to the {@link CountingWritableByteChannel}

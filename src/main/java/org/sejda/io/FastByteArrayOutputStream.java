@@ -15,6 +15,8 @@
  */
 package org.sejda.io;
 
+import static org.sejda.io.util.RequireUtils.requireIOCondition;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,7 +44,7 @@ public class FastByteArrayOutputStream extends OutputStream {
     private static final int MAX_BLOCK_SIZE = 128 * 1024 * 1024;
 
     // The buffers used to store the content bytes
-    private final LinkedList<byte[]> buffers = new LinkedList<byte[]>();
+    private final LinkedList<byte[]> buffers = new LinkedList<>();
 
     // The size, in bytes, to use when allocating the first byte[]
     private final int initialBlockSize;
@@ -83,15 +85,13 @@ public class FastByteArrayOutputStream extends OutputStream {
 
     @Override
     public void write(int datum) throws IOException {
-        if (this.closed) {
-            throw new IOException("Stream closed");
-        } else {
-            if (this.buffers.peekLast() == null || this.buffers.getLast().length == this.index) {
-                addBuffer(1);
-            }
-            // store the byte
-            this.buffers.getLast()[this.index++] = (byte) datum;
+        requireIOCondition(!this.closed, "Stream closed");
+        if (this.buffers.peekLast() == null || this.buffers.getLast().length == this.index) {
+            addBuffer(1);
         }
+        // store the byte
+        this.buffers.getLast()[this.index++] = (byte) datum;
+
     }
 
     @Override
@@ -347,25 +347,23 @@ public class FastByteArrayOutputStream extends OutputStream {
             if (this.currentBuffer == null) {
                 // This stream doesn't have any data in it...
                 return -1;
-            } else {
-                if (this.nextIndexInCurrentBuffer < this.currentBufferLength) {
-                    this.totalBytesRead++;
-                    return this.currentBuffer[this.nextIndexInCurrentBuffer++];
-                } else {
-                    if (this.buffersIterator.hasNext()) {
-                        this.currentBuffer = this.buffersIterator.next();
-                        if (this.currentBuffer == this.fastByteArrayOutputStream.buffers.getLast()) {
-                            this.currentBufferLength = this.fastByteArrayOutputStream.index;
-                        } else {
-                            this.currentBufferLength = this.currentBuffer.length;
-                        }
-                        this.nextIndexInCurrentBuffer = 0;
-                    } else {
-                        this.currentBuffer = null;
-                    }
-                    return read();
-                }
             }
+            if (this.nextIndexInCurrentBuffer < this.currentBufferLength) {
+                this.totalBytesRead++;
+                return this.currentBuffer[this.nextIndexInCurrentBuffer++];
+            }
+            if (this.buffersIterator.hasNext()) {
+                this.currentBuffer = this.buffersIterator.next();
+                if (this.currentBuffer == this.fastByteArrayOutputStream.buffers.getLast()) {
+                    this.currentBufferLength = this.fastByteArrayOutputStream.index;
+                } else {
+                    this.currentBufferLength = this.currentBuffer.length;
+                }
+                this.nextIndexInCurrentBuffer = 0;
+            } else {
+                this.currentBuffer = null;
+            }
+            return read();
         }
 
         @Override
@@ -389,29 +387,28 @@ public class FastByteArrayOutputStream extends OutputStream {
                 if (this.currentBuffer == null) {
                     // This stream doesn't have any data in it...
                     return -1;
-                } else {
-                    if (this.nextIndexInCurrentBuffer < this.currentBufferLength) {
-                        int bytesToCopy = Math.min(len, this.currentBufferLength - this.nextIndexInCurrentBuffer);
-                        System.arraycopy(this.currentBuffer, this.nextIndexInCurrentBuffer, b, off, bytesToCopy);
-                        this.totalBytesRead += bytesToCopy;
-                        this.nextIndexInCurrentBuffer += bytesToCopy;
-                        int remaining = read(b, off + bytesToCopy, len - bytesToCopy);
-                        return bytesToCopy + Math.max(remaining, 0);
-                    } else {
-                        if (this.buffersIterator.hasNext()) {
-                            this.currentBuffer = this.buffersIterator.next();
-                            if (this.currentBuffer == this.fastByteArrayOutputStream.buffers.getLast()) {
-                                this.currentBufferLength = this.fastByteArrayOutputStream.index;
-                            } else {
-                                this.currentBufferLength = this.currentBuffer.length;
-                            }
-                            this.nextIndexInCurrentBuffer = 0;
-                        } else {
-                            this.currentBuffer = null;
-                        }
-                        return read(b, off, len);
-                    }
                 }
+                if (this.nextIndexInCurrentBuffer < this.currentBufferLength) {
+                    int bytesToCopy = Math.min(len, this.currentBufferLength - this.nextIndexInCurrentBuffer);
+                    System.arraycopy(this.currentBuffer, this.nextIndexInCurrentBuffer, b, off, bytesToCopy);
+                    this.totalBytesRead += bytesToCopy;
+                    this.nextIndexInCurrentBuffer += bytesToCopy;
+                    int remaining = read(b, off + bytesToCopy, len - bytesToCopy);
+                    return bytesToCopy + Math.max(remaining, 0);
+                }
+                if (this.buffersIterator.hasNext()) {
+                    this.currentBuffer = this.buffersIterator.next();
+                    if (this.currentBuffer == this.fastByteArrayOutputStream.buffers.getLast()) {
+                        this.currentBufferLength = this.fastByteArrayOutputStream.index;
+                    } else {
+                        this.currentBufferLength = this.currentBuffer.length;
+                    }
+                    this.nextIndexInCurrentBuffer = 0;
+                } else {
+                    this.currentBuffer = null;
+                }
+                return read(b, off, len);
+
             }
         }
 
@@ -428,27 +425,26 @@ public class FastByteArrayOutputStream extends OutputStream {
             if (this.currentBuffer == null) {
                 // This stream doesn't have any data in it...
                 return 0;
-            } else {
-                if (this.nextIndexInCurrentBuffer < this.currentBufferLength) {
-                    int bytesToSkip = Math.min(len, this.currentBufferLength - this.nextIndexInCurrentBuffer);
-                    this.totalBytesRead += bytesToSkip;
-                    this.nextIndexInCurrentBuffer += bytesToSkip;
-                    return (bytesToSkip + skip(len - bytesToSkip));
-                } else {
-                    if (this.buffersIterator.hasNext()) {
-                        this.currentBuffer = this.buffersIterator.next();
-                        if (this.currentBuffer == this.fastByteArrayOutputStream.buffers.getLast()) {
-                            this.currentBufferLength = this.fastByteArrayOutputStream.index;
-                        } else {
-                            this.currentBufferLength = this.currentBuffer.length;
-                        }
-                        this.nextIndexInCurrentBuffer = 0;
-                    } else {
-                        this.currentBuffer = null;
-                    }
-                    return skip(len);
-                }
             }
+            if (this.nextIndexInCurrentBuffer < this.currentBufferLength) {
+                int bytesToSkip = Math.min(len, this.currentBufferLength - this.nextIndexInCurrentBuffer);
+                this.totalBytesRead += bytesToSkip;
+                this.nextIndexInCurrentBuffer += bytesToSkip;
+                return (bytesToSkip + skip(len - bytesToSkip));
+            }
+            if (this.buffersIterator.hasNext()) {
+                this.currentBuffer = this.buffersIterator.next();
+                if (this.currentBuffer == this.fastByteArrayOutputStream.buffers.getLast()) {
+                    this.currentBufferLength = this.fastByteArrayOutputStream.index;
+                } else {
+                    this.currentBufferLength = this.currentBuffer.length;
+                }
+                this.nextIndexInCurrentBuffer = 0;
+            } else {
+                this.currentBuffer = null;
+            }
+            return skip(len);
+
         }
 
         @Override
