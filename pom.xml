@@ -143,7 +143,6 @@
 					<toolchains>
 						<jdk>
 							<version>9</version>
-							<vendor>openjdk</vendor>
 						</jdk>
 					</toolchains>
 				</configuration>

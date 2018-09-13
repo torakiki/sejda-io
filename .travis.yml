@@ -2,6 +2,8 @@ language: java
 sudo: false
 jdk:
   - oraclejdk9
+before_install:
+  - cp .travis-toolchains.xml ~/.m2/toolchains.xml   
 notifications:
   email:
     - info@sejda.org
