@@ -15,7 +15,7 @@
  */
 package org.sejda.io;
 
-import static org.sejda.io.util.RequireUtils.requireNotNullArg;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.WritableByteChannel;
 
-import org.sejda.io.util.IOUtils;
+import org.sejda.commons.util.IOUtils;
 
 /**
  * A {@link WritableByteChannel} that keeps track of the number of written bytes

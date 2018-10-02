@@ -16,7 +16,7 @@
 package org.sejda.io;
 
 import static java.util.Optional.ofNullable;
-import static org.sejda.io.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireArg;
 
 import java.io.File;
 import java.io.IOException;
@@ -149,7 +149,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     @Override
     public void close() throws IOException {
         super.close();
-        IOUtils.close(localCopiesSupplier);
+        org.sejda.commons.util.IOUtils.close(localCopiesSupplier);
         Optional.ofNullable(unmapper).ifPresent(m -> pages.stream().forEach(m));
         pages.clear();
     }

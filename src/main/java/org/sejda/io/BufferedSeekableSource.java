@@ -16,12 +16,12 @@
 package org.sejda.io;
 
 import static java.util.Optional.ofNullable;
-import static org.sejda.io.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireArg;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.sejda.io.util.IOUtils;
+import org.sejda.commons.util.IOUtils;
 
 /**
  * {@link SeekableSource} wrapping an existing one and providing buffered read. When a read method is called, a {@link SeekableSources#INPUT_BUFFER_SIZE_PROPERTY} long chunk of

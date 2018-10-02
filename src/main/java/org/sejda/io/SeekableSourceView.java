@@ -15,9 +15,9 @@
  */
 package org.sejda.io;
 
-import static org.sejda.io.util.RequireUtils.requireArg;
-import static org.sejda.io.util.RequireUtils.requireNotNullArg;
-import static org.sejda.io.util.RequireUtils.requireState;
+import static org.sejda.commons.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
+import static org.sejda.commons.util.RequireUtils.requireState;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

@@ -16,7 +16,7 @@
 package org.sejda.io;
 
 import static java.util.Objects.requireNonNull;
-import static org.sejda.io.util.RequireUtils.requireState;
+import static org.sejda.commons.util.RequireUtils.requireState;
 
 import java.io.IOException;
 import java.io.InputStream;

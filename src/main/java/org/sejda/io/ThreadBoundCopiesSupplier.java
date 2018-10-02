@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.sejda.io.util.IOUtils;
+import org.sejda.commons.util.IOUtils;
 
 /**
  * Component suppling per-thread copies of a {@link SeekableSource} using the provided supplier. When closed, all the generated copies are closed as well.
