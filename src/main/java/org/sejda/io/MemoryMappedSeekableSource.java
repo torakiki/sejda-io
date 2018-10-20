@@ -27,6 +27,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.sejda.util.IOUtils;
 import org.slf4j.Logger;
@@ -49,6 +51,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     private long size;
     private ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
             () -> new MemoryMappedSeekableSource(this));
+    private Consumer<? super ByteBuffer> unmapper = IOUtils::unmap;
 
     public MemoryMappedSeekableSource(File file) throws IOException {
         super(ofNullable(file).map(File::getAbsolutePath).orElseThrow(() -> {
@@ -74,6 +77,8 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
         for (ByteBuffer page : parent.pages) {
             this.pages.add(page.duplicate());
         }
+        // unmap doesn't work on duplicate, see Unsafe#invokeCleaner
+        this.unmapper = null;
     }
 
     @Override
@@ -146,7 +151,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     public void close() throws IOException {
         super.close();
         IOUtils.close(localCopiesSupplier);
-        pages.stream().forEach(IOUtils::unmap);
+        Optional.ofNullable(unmapper).ifPresent(m -> pages.stream().forEach(m));
         pages.clear();
     }
 
