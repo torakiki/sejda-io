@@ -15,10 +15,11 @@
  */
 package org.sejda.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,9 +30,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Andrea Vacondio
@@ -43,21 +44,23 @@ public class BufferedCountingChannelWriterTest {
     private CountingWritableByteChannel channel;
     private BufferedCountingChannelWriter victim;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         out = new ByteArrayOutputStream();
         channel = CountingWritableByteChannel.from(out);
         victim = new BufferedCountingChannelWriter(channel);
     }
 
-    @After
+    @AfterEach
     public void after() {
         System.getProperties().remove(BufferedCountingChannelWriter.OUTPUT_BUFFER_SIZE_PROPERTY);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void nullConstructor() {
-        new BufferedCountingChannelWriter(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            new BufferedCountingChannelWriter(null);
+        }, "Cannot write to a null channell");
     }
 
     @Test

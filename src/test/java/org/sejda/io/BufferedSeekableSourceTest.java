@@ -15,49 +15,47 @@
  */
 package org.sejda.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Andrea Vacondio
  *
  */
-public class BufferedSeekableSourceTest extends BaseTestSeekableSource
-{
+public class BufferedSeekableSourceTest extends BaseTestSeekableSource {
     private ByteArraySeekableSource wrapped;
     private BufferedSeekableSource victim;
 
-    @Before
-    public void setUp()
-    {
+    @BeforeEach
+    public void setUp() {
         wrapped = new ByteArraySeekableSource(new byte[] { 'a', 'b', 'c' });
         victim = new BufferedSeekableSource(wrapped);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void failingConstructor()
-    {
-        new BufferedSeekableSource(null);
+    @Test
+    public void failingConstructor() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new BufferedSeekableSource(null);
+        }, "Input decorated SeekableSource cannot be null");
     }
 
     @Test
-    public void constructor()
-    {
+    public void constructor() {
         assertEquals(wrapped.id(), victim.id());
         assertEquals(wrapped.size(), victim.size());
     }
 
     @Override
     @Test
-    public void close() throws IOException
-    {
+    public void close() throws IOException {
         victim.read();
         assertTrue(victim.isOpen());
         assertTrue(wrapped.isOpen());
@@ -67,8 +65,7 @@ public class BufferedSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void read() throws IOException
-    {
+    public void read() throws IOException {
         assertEquals(97, victim.read());
         assertEquals(1, victim.position());
         assertEquals(98, victim.read());
@@ -80,8 +77,7 @@ public class BufferedSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void readBuff() throws IOException
-    {
+    public void readBuff() throws IOException {
         victim.position(1);
         ByteBuffer dst = ByteBuffer.allocate(10);
         victim.read(dst);
@@ -96,8 +92,7 @@ public class BufferedSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void position() throws IOException
-    {
+    public void position() throws IOException {
         assertEquals(0, victim.position());
         assertEquals(97, victim.read());
         victim.position(0);
@@ -117,8 +112,7 @@ public class BufferedSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Override
-    SeekableSource victim()
-    {
+    SeekableSource victim() {
         return victim;
     }
 }

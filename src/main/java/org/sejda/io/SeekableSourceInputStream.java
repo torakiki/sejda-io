@@ -15,7 +15,7 @@
  */
 package org.sejda.io;
 
-import static java.util.Objects.requireNonNull;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 import static org.sejda.commons.util.RequireUtils.requireState;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ class SeekableSourceInputStream extends InputStream {
     private SeekableSource wrapped;
 
     SeekableSourceInputStream(SeekableSource wrapped) {
-        requireNonNull(wrapped);
+        requireNotNullArg(wrapped, "Cannot decorate a null instance");
         this.wrapped = wrapped;
     }
 

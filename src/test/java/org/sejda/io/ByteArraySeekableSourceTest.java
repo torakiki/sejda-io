@@ -15,39 +15,38 @@
  */
 package org.sejda.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Andrea Vacondio
  *
  */
-public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
-{
+public class ByteArraySeekableSourceTest extends BaseTestSeekableSource {
 
     private ByteArraySeekableSource victim;
 
-    @Before
-    public void setUp()
-    {
+    @BeforeEach
+    public void setUp() {
         victim = new ByteArraySeekableSource(new byte[] { 'a', 'b', 'c' });
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void failingConstructor()
-    {
-        new ByteArraySeekableSource(null);
+    @Test
+    public void failingConstructor() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new ByteArraySeekableSource(null);
+        }, "Input byte array cannot be null");
     }
 
     @Test
-    public void read() throws IOException 
-    {
+    public void read() throws IOException {
         assertEquals(97, victim.read());
         assertEquals(1, victim.position());
         assertEquals(98, victim.read());
@@ -59,8 +58,7 @@ public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void readBuff() throws IOException
-    {
+    public void readBuff() throws IOException {
         victim.position(1);
         ByteBuffer dst = ByteBuffer.allocate(10);
         victim.read(dst);
@@ -75,8 +73,7 @@ public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void position() throws IOException 
-    {
+    public void position() throws IOException {
         assertEquals(0, victim.position());
         assertEquals(97, victim.read());
         victim.position(0);
@@ -96,8 +93,7 @@ public class ByteArraySeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Override
-    SeekableSource victim()
-    {
+    SeekableSource victim() {
         return victim;
     }
 

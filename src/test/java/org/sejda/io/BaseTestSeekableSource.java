@@ -15,17 +15,18 @@
  */
 package org.sejda.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.sejda.commons.util.IOUtils;
 
 /**
@@ -36,20 +37,24 @@ public abstract class BaseTestSeekableSource {
 
     abstract SeekableSource victim();
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         IOUtils.close(victim());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void illegalPosition() throws IOException {
-        victim().position(-10);
+    @Test
+    public void illegalPosition() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            victim().position(-10);
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void viewClosed() throws IOException {
         victim().close();
-        victim().view(0, 2);
+        assertThrows(IllegalStateException.class, () -> {
+            victim().view(0, 2);
+        });
     }
 
     @Test
@@ -65,16 +70,20 @@ public abstract class BaseTestSeekableSource {
         assertFalse(victim().isOpen());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void readClosed() throws IOException {
         victim().close();
-        victim().read();
+        assertThrows(IllegalStateException.class, () -> {
+            victim().read();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void readByteBuffClosed() throws IOException {
         victim().close();
-        victim().read(ByteBuffer.allocate(5));
+        assertThrows(IllegalStateException.class, () -> {
+            victim().read(ByteBuffer.allocate(5));
+        });
     }
 
     @Test
@@ -83,10 +92,12 @@ public abstract class BaseTestSeekableSource {
         assertEquals(1, victim().forward(1).position());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void invalidForward() throws IOException {
         assertEquals(0, victim().position());
-        victim().forward(victim().size() + 1);
+        assertThrows(IllegalArgumentException.class, () -> {
+            victim().forward(victim().size() + 1);
+        });
     }
 
     @Test
@@ -95,10 +106,12 @@ public abstract class BaseTestSeekableSource {
         assertEquals(0, victim().back().position());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void invalidBack() throws IOException {
         assertEquals(0, victim().position());
-        victim().back();
+        assertThrows(IllegalArgumentException.class, () -> {
+            victim().back();
+        });
     }
 
     @Test

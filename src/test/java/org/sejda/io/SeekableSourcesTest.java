@@ -15,8 +15,9 @@
  */
 package org.sejda.io;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,11 +26,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /**
  * @author Andrea Vacondio
@@ -39,43 +39,52 @@ public class SeekableSourcesTest {
 
     private static String BITNESS;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() {
         BITNESS = System.getProperty("sun.arch.data.model");
         System.setProperty("sun.arch.data.model", "64");
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() {
         System.setProperty("sun.arch.data.model", BITNESS);
     }
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    @Test
+    public void nullSeekableSourceFrom() {
+        assertThrows(NullPointerException.class, () -> {
+            SeekableSources.seekableSourceFrom(null);
+        });
 
-    @Test(expected = NullPointerException.class)
-    public void nullSeekableSourceFrom() throws IOException {
-        SeekableSources.seekableSourceFrom(null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void nullInMemorySeekableSourceFromBytes() {
-        SeekableSources.inMemorySeekableSourceFrom((byte[]) null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void nullInMemorySeekableSourceFromStream() throws IOException {
-        SeekableSources.inMemorySeekableSourceFrom((InputStream) null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void nullOnTempFileSeekableSourceFrom() throws IOException {
-        SeekableSources.onTempFileSeekableSourceFrom(null);
     }
 
     @Test
-    public void seekableSourceFrom() throws IOException {
-        assertNotNull(SeekableSources.seekableSourceFrom(temp.newFile()));
+    public void nullInMemorySeekableSourceFromBytes() {
+        assertThrows(NullPointerException.class, () -> {
+            SeekableSources.inMemorySeekableSourceFrom((byte[]) null);
+        });
+
+    }
+
+    @Test
+    public void nullInMemorySeekableSourceFromStream() {
+        assertThrows(NullPointerException.class, () -> {
+            SeekableSources.inMemorySeekableSourceFrom((InputStream) null);
+        });
+    }
+
+    @Test
+    public void nullOnTempFileSeekableSourceFrom() {
+        assertThrows(NullPointerException.class, () -> {
+            SeekableSources.onTempFileSeekableSourceFrom(null);
+        });
+    }
+
+    @Test
+    public void seekableSourceFrom(@TempDir Path temp) throws IOException {
+        Path test = temp.resolve("test.txt");
+        Files.createFile(test);
+        assertNotNull(SeekableSources.seekableSourceFrom(test.toFile()));
     }
 
     @Test

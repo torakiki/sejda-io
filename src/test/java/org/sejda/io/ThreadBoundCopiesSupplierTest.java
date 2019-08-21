@@ -15,9 +15,9 @@
  */
 package org.sejda.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -28,7 +28,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Andrea Vacondio
@@ -47,12 +47,7 @@ public class ThreadBoundCopiesSupplierTest {
 
     @Test
     public void differentCopyPerThread() throws IOException, InterruptedException, ExecutionException {
-        SeekableSourceSupplier<ByteArraySeekableSource> supplier = new SeekableSourceSupplier<>() {
-            @Override
-            public ByteArraySeekableSource get() {
-                return new ByteArraySeekableSource(new byte[0]);
-            }
-        };
+        SeekableSourceSupplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
         ThreadBoundCopiesSupplier<ByteArraySeekableSource> victim = new ThreadBoundCopiesSupplier<>(supplier);
         ByteArraySeekableSource first = victim.get();
         assertNotNull(first);
@@ -69,12 +64,7 @@ public class ThreadBoundCopiesSupplierTest {
 
     @Test
     public void sameThreadSameCopy() throws IOException, InterruptedException, ExecutionException {
-        SeekableSourceSupplier<ByteArraySeekableSource> supplier = new SeekableSourceSupplier<>() {
-            @Override
-            public ByteArraySeekableSource get() {
-                return new ByteArraySeekableSource(new byte[0]);
-            }
-        };
+        SeekableSourceSupplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
         ThreadBoundCopiesSupplier<ByteArraySeekableSource> victim = new ThreadBoundCopiesSupplier<>(supplier);
         assertEquals(victim.get(), victim.get());
         Executor executor = Executors.newSingleThreadExecutor();

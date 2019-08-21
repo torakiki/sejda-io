@@ -15,9 +15,10 @@
  */
 package org.sejda.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -28,62 +29,58 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class CountingWritableByteChannelTest
-{
+public class CountingWritableByteChannelTest {
     private ByteArrayOutputStream out;
     private CountingWritableByteChannel victim;
     private WritableByteChannel wrapped;
     private ByteBuffer src = ByteBuffer.wrap(new byte[] { '1', '1', '2', '1', '1' });
 
-    @Before
-    public void setUp()
-    {
+    @BeforeEach
+    public void setUp() {
         out = new ByteArrayOutputStream();
         wrapped = Channels.newChannel(out);
         victim = new CountingWritableByteChannel(wrapped);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void nullConstructor()
-    {
-        new CountingWritableByteChannel(null);
+    @Test
+    public void nullConstructor() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new CountingWritableByteChannel(null);
+        }, "Cannot decorate a null instance");
     }
 
     @Test
-    public void count() throws Exception
-    {
+    public void count() throws Exception {
         assertEquals(0, victim.count());
         victim.write(src);
         assertEquals(5, victim.count());
     }
 
-    @Test(expected = ClosedChannelException.class)
-    public void closedWrite() throws Exception
-    {
+    @Test
+    public void closedWrite() throws Exception {
         victim.close();
-        victim.write(src);
+        assertThrows(ClosedChannelException.class, () -> {
+            victim.write(src);
+        });
     }
 
     @Test
-    public void write() throws Exception
-    {
+    public void write() throws Exception {
         victim.write(src);
         assertTrue(Arrays.equals(out.toByteArray(), src.array()));
     }
 
     @Test
-    public void isOpen()
-    {
+    public void isOpen() {
         assertTrue(victim.isOpen());
         assertTrue(wrapped.isOpen());
     }
 
     @Test
-    public void close() throws Exception
-    {
+    public void close() throws Exception {
         assertTrue(victim.isOpen());
         assertTrue(wrapped.isOpen());
         victim.close();
@@ -92,51 +89,41 @@ public class CountingWritableByteChannelTest
     }
 
     @Test
-    public void testFromWritableByteChannel() throws Exception
-    {
+    public void testFromWritableByteChannel() throws Exception {
         victim = CountingWritableByteChannel.from(Channels.newChannel(out));
         victim.write(src);
         assertTrue(Arrays.equals(out.toByteArray(), src.array()));
     }
 
     @Test
-    public void fromOutputStream() throws Exception
-    {
+    public void fromOutputStream() throws Exception {
         victim = CountingWritableByteChannel.from(out);
         victim.write(src);
         assertTrue(Arrays.equals(out.toByteArray(), src.array()));
     }
 
     @Test
-    public void fromFile() throws Exception
-    {
+    public void fromFile() throws Exception {
         Path tempFile = Files.createTempFile("SAMBox", null);
-        try
-        {
+        try {
             assertEquals(0, Files.size(tempFile));
             victim = CountingWritableByteChannel.from(tempFile.toFile());
             victim.write(src);
             assertTrue(Arrays.equals(Files.readAllBytes(tempFile), src.array()));
-        }
-        finally
-        {
+        } finally {
             Files.deleteIfExists(tempFile);
         }
     }
 
     @Test
-    public void fromString() throws Exception
-    {
+    public void fromString() throws Exception {
         Path tempFile = Files.createTempFile("SAMBox", null);
-        try
-        {
+        try {
             assertEquals(0, Files.size(tempFile));
             victim = CountingWritableByteChannel.from(tempFile.toAbsolutePath().toString());
             victim.write(src);
             assertTrue(Arrays.equals(Files.readAllBytes(tempFile), src.array()));
-        }
-        finally
-        {
+        } finally {
             Files.deleteIfExists(tempFile);
         }
     }

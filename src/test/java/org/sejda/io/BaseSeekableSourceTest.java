@@ -15,95 +15,85 @@
  */
 package org.sejda.io;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Andrea Vacondio
  *
  */
-public class BaseSeekableSourceTest
-{
+public class BaseSeekableSourceTest {
 
     private BaseSeekableSource victim;
 
-    @Before
-    public void setUp()
-    {
-        victim = new BaseSeekableSource("id")
-        {
+    @BeforeEach
+    public void setUp() {
+        victim = new BaseSeekableSource("id") {
             @Override
-            public int read(ByteBuffer dst) 
-            {
+            public int read(ByteBuffer dst) {
                 return 0;
             }
 
             @Override
-            public SeekableSource view(long startingPosition, long length) 
-            {
+            public SeekableSource view(long startingPosition, long length) {
                 return null;
             }
 
             @Override
-            public long size()
-            {
+            public long size() {
                 return 0;
             }
 
             @Override
-            public int read()
-            {
+            public int read() {
                 return 0;
             }
 
             @Override
-            public SeekableSource position(long position) 
-            {
+            public SeekableSource position(long position) {
                 return null;
             }
 
             @Override
-            public long position() 
-            {
+            public long position() {
                 return 0;
             }
         };
     }
 
     @Test
-    public void isOpen() throws IOException
-    {
+    public void isOpen() throws IOException {
         assertTrue(victim.isOpen());
         victim.close();
         assertFalse(victim.isOpen());
     }
 
     @Test
-    public void requireOpen() throws IOException 
-    {
+    public void requireOpen() throws IOException {
         assertTrue(victim.isOpen());
-        victim.requireOpen();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void failingRequireOpen() throws IOException
-    {
-        assertTrue(victim.isOpen());
-        victim.close();
         victim.requireOpen();
     }
 
     @Test
-    public void id()
-    {
+    public void failingRequireOpen() throws IOException {
+        assertTrue(victim.isOpen());
+        victim.close();
+        assertThrows(IllegalStateException.class, () -> {
+            victim.requireOpen();
+        });
+    }
+
+    @Test
+    public void id() {
         assertEquals("id", victim.id());
     }
 
