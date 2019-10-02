@@ -16,11 +16,6 @@
 package org.sejda.io;
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -30,6 +25,8 @@ import java.nio.file.StandardCopyOption;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Andrea Vacondio
@@ -86,6 +83,30 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource
         victim.read(empty);
         empty.flip();
         assertFalse(empty.hasRemaining());
+    }
+
+    @Test
+    public void reset() throws IOException
+    {
+        ByteBuffer dst = ByteBuffer.allocate(20);
+        victim.read(dst);
+        assertEquals(20, victim.position());
+        victim.reset();
+        assertEquals(0, victim.position());
+    }
+
+    @Test
+    public void newInputStream() throws IOException
+    {
+        int length = 20;
+        byte[] buffer1 = new byte[length];
+        byte[] buffer2 = new byte[length];
+
+        victim.asNewInputStream().read(buffer1);
+        victim.asNewInputStream().read(buffer2);
+
+        assertArrayEquals(buffer1, buffer2);
+        assertEquals(length, victim.position());
     }
 
     @Override

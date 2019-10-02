@@ -151,4 +151,29 @@ public interface SeekableSource extends ReadableByteChannel {
     default InputStream asInputStream() {
         return new SeekableSourceInputStream(this);
     }
+
+    /**
+     * Resets stream back to beginning
+     */
+    default void reset() {
+        try {
+            requireOpen();
+            this.back(this.position());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to reset stream");
+        }
+    }
+
+    void requireOpen() throws IOException;
+
+    /**
+     * Creates an {@link InputStream} from this {@link SeekableSource} resetting the stream to the beginning.
+     *
+     * @return the input stream wrapping the given {@link SeekableSource}
+     */
+    default InputStream asNewInputStream() {
+        reset();
+
+        return new SeekableSourceInputStream(this);
+    }
 }

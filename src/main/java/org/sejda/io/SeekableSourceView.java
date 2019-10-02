@@ -112,7 +112,7 @@ class SeekableSourceView extends BaseSeekableSource {
     }
 
     @Override
-    protected void requireOpen() throws IOException {
+    public void requireOpen() throws IOException {
         super.requireOpen();
         SeekableSource wrapped = supplier.get();
         requireState(wrapped.isOpen(), "The original SeekableSource has been closed");

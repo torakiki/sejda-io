@@ -50,7 +50,8 @@ public abstract class BaseSeekableSource implements SeekableSource {
      *             if the source is closed
      * @throws IOException
      */
-    protected void requireOpen() throws IOException {
+    @Override
+    public void requireOpen() throws IOException {
         requireState(isOpen(), "The SeekableSource has been closed");
     }
 
