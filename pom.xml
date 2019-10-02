@@ -5,7 +5,7 @@
 	<artifactId>sejda-io</artifactId>
 	<packaging>jar</packaging>
 	<name>sejda-io</name>
-	<version>2.1.1-SNAPSHOT</version>
+	<version>2.1.1</version>
 
 	<description>An Input/Output layer built on top of Java standard io and nio packages</description>
 	<url>http://www.sejda.org</url>
@@ -37,7 +37,7 @@
 		<connection>scm:git:git@github.com:torakiki/sejda-io.git</connection>
 		<developerConnection>scm:git:git@github.com:torakiki/sejda-io.git</developerConnection>
 		<url>scm:git:git@github.com:torakiki/sejda-io.git</url>
-		<tag>HEAD</tag>
+		<tag>v2.1.1</tag>
 	</scm>
 
 	<developers>
