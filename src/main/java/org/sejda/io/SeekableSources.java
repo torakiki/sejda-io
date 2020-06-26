@@ -101,14 +101,26 @@ public final class SeekableSources {
 
     /**
      * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is copied to a temporary file.
-     * 
+     *
      * @param stream
      * @return a {@link SeekableSource} from the given stream.
      * @throws IOException
      */
     public static SeekableSource onTempFileSeekableSourceFrom(InputStream stream) throws IOException {
+        return onTempFileSeekableSourceFrom(stream, "SejdaIO");
+    }
+
+    /**
+     * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is copied to a temporary file.
+     * 
+     * @param stream
+     * @param filenameHint name to use for the temp file that will be created
+     * @return a {@link SeekableSource} from the given stream.
+     * @throws IOException
+     */
+    public static SeekableSource onTempFileSeekableSourceFrom(InputStream stream, String filenameHint) throws IOException {
         requireNonNull(stream);
-        Path temp = Files.createTempFile("SejdaIO", null);
+        Path temp = Files.createTempFile(filenameHint, null);
         Files.copy(stream, temp, StandardCopyOption.REPLACE_EXISTING);
         return new BufferedSeekableSource(new FileChannelSeekableSource(temp.toFile()) {
             @Override
