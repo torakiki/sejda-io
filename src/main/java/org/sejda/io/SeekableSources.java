@@ -120,13 +120,18 @@ public final class SeekableSources {
      */
     public static SeekableSource onTempFileSeekableSourceFrom(InputStream stream, String filenameHint) throws IOException {
         requireNonNull(stream);
-        Path temp = Files.createTempFile(filenameHint, null);
-        Files.copy(stream, temp, StandardCopyOption.REPLACE_EXISTING);
-        return new BufferedSeekableSource(new FileChannelSeekableSource(temp.toFile()) {
+        File tempDir = Files.createTempDirectory("SejdaIODir").toFile();
+        File temp = new File(tempDir, filenameHint);
+        if(temp.exists()) {
+            throw new RuntimeException("Temp file collision: "+ temp.getAbsolutePath());
+        }
+        
+        Files.copy(stream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        return new BufferedSeekableSource(new FileChannelSeekableSource(temp) {
             @Override
             public void close() throws IOException {
                 super.close();
-                Files.deleteIfExists(temp);
+                Files.deleteIfExists(temp.toPath());
             }
         });
     }
