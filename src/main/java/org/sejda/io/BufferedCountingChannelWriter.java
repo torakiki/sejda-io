@@ -63,7 +63,7 @@ public class BufferedCountingChannelWriter implements Closeable {
     }
 
     /**
-     * Writes the given string in {@link Charsets#ISO_8859_1}
+     * Writes the given string in {@link StandardCharsets#ISO_8859_1}
      * 
      * @param value
      * @throws IOException

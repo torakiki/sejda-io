@@ -15,6 +15,11 @@
  */
 package org.sejda.io;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,19 +31,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 /**
  * @author Andrea Vacondio
  */
-public class FileChannelSeekableSourceTest extends BaseTestSeekableSource
-{
+public class FileChannelSeekableSourceTest extends BaseTestSeekableSource {
     private FileChannelSeekableSource victim;
     private Path tempFile;
 
     @BeforeEach
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         tempFile = Files.createTempFile("SejdaIO", null);
         Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
                 StandardCopyOption.REPLACE_EXISTING);
@@ -46,22 +47,19 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @AfterEach
-    public void after() throws IOException
-    {
+    public void after() throws IOException {
         Files.deleteIfExists(tempFile);
     }
 
     @Test
-    public void failingConstructor()
-    {
+    public void failingConstructor() {
         assertThrows(IllegalArgumentException.class, () -> {
             new FileChannelSeekableSource(null);
         }, "Input file cannot be null");
     }
 
     @Test
-    public void read() throws IOException
-    {
+    public void read() throws IOException {
         assertEquals(0, victim.position());
         assertNotNull(victim.read());
         assertNotNull(victim.read());
@@ -71,8 +69,7 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void readBuff() throws IOException
-    {
+    public void readBuff() throws IOException {
         ByteBuffer dst = ByteBuffer.allocate(20);
         victim.read(dst);
         dst.flip();
@@ -86,8 +83,7 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void reset() throws IOException
-    {
+    public void reset() throws IOException {
         ByteBuffer dst = ByteBuffer.allocate(20);
         victim.read(dst);
         assertEquals(20, victim.position());
@@ -96,8 +92,7 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Test
-    public void newInputStream() throws IOException
-    {
+    public void newInputStream() throws IOException {
         int length = 20;
         byte[] buffer1 = new byte[length];
         byte[] buffer2 = new byte[length];
@@ -110,8 +105,7 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource
     }
 
     @Override
-    SeekableSource victim()
-    {
+    SeekableSource victim() {
         return victim;
     }
 
