@@ -1,7 +1,0 @@
-language: java
-sudo: false
-jdk:
-  - openjdk8
-notifications:
-  email:
-    - info@sejda.org
