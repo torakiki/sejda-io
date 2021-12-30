@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
@@ -38,7 +39,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
     public void setUp() throws Exception {
         tempFile = Files.createTempFile("SejdaIO", null);
         Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                StandardCopyOption.REPLACE_EXISTING);
+                   StandardCopyOption.REPLACE_EXISTING);
         victim = new MemoryMappedSeekableSource(tempFile.toFile());
     }
 
@@ -51,9 +52,11 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
     @Test
     public void failingConstructor() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new MemoryMappedSeekableSource(null);
+            new MemoryMappedSeekableSource((File) null);
         }, "Input file cannot be null");
-
+        assertThrows(IllegalArgumentException.class, () -> {
+            new MemoryMappedSeekableSource((Path) null);
+        }, "Input file cannot be null");
     }
 
     @Test
@@ -72,7 +75,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
         Path tempFile = Files.createTempFile("SejdaIO", null);
         try {
             Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                    StandardCopyOption.REPLACE_EXISTING);
+                       StandardCopyOption.REPLACE_EXISTING);
             victim = new MemoryMappedSeekableSource(tempFile.toFile());
             victim.position(49);
             assertNotNull(victim.read());
@@ -104,7 +107,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
         Path tempFile = Files.createTempFile("SejdaIO", null);
         try {
             Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                    StandardCopyOption.REPLACE_EXISTING);
+                       StandardCopyOption.REPLACE_EXISTING);
             victim = new MemoryMappedSeekableSource(tempFile.toFile());
             ByteBuffer dst = ByteBuffer.allocate(70);
             victim.read(dst);

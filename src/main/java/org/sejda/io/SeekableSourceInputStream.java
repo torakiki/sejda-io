@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
  * @author Andrea Vacondio
  */
 class SeekableSourceInputStream extends InputStream {
-    private SeekableSource wrapped;
+    private final SeekableSource wrapped;
 
     SeekableSourceInputStream(SeekableSource wrapped) {
         requireNotNullArg(wrapped, "Cannot decorate a null instance");

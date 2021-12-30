@@ -29,10 +29,10 @@ import java.nio.ByteBuffer;
  * @author Andrea Vacondio
  */
 class SeekableSourceView extends BaseSeekableSource {
-    private long startingPosition;
-    private long length;
+    private final long startingPosition;
+    private final long length;
     private long currentPosition;
-    private SeekableSourceSupplier<? extends SeekableSource> supplier;
+    private final SeekableSourceSupplier<? extends SeekableSource> supplier;
 
     public SeekableSourceView(SeekableSourceSupplier<? extends SeekableSource> supplier, String id,
             long startingPosition, long length) throws IOException {

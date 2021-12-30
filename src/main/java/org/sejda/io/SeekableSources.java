@@ -21,16 +21,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import org.sejda.commons.util.IOUtils;
 
 /**
- * This class consists of solely static methods to create the most appropriate {@link SeekableSource} based on the given input or to bridge {@link SeekableSource}s to the more
- * traditional {@link InputStream} or other standard I/O classes.
- * 
- * @author Andrea Vacondio
+ * This class consists of solely static methods to create the most appropriate {@link SeekableSource} based on the given input or to bridge {@link
+ * SeekableSource}s to the more traditional {@link InputStream} or other standard I/O classes.
  *
+ * @author Andrea Vacondio
  */
 public final class SeekableSources {
 
@@ -58,10 +58,9 @@ public final class SeekableSources {
     }
 
     /**
-     * Factory method to create a {@link SeekableSource} from a {@link File}. An attempt is made to return the best {@link SeekableSource} implementation based on the size of the
-     * file and bitness of the JVM.
-     * 
-     * @param file
+     * Factory method to create a {@link SeekableSource} from a {@link File}. An attempt is made to return the best {@link SeekableSource} implementation based
+     * on the size of the file and bitness of the JVM.
+     *
      * @return a {@link SeekableSource} from the given file.
      * @throws IOException
      */
@@ -76,8 +75,20 @@ public final class SeekableSources {
     }
 
     /**
+     * Factory method to create a {@link SeekableSource} from a {@link Path}. An attempt is made to return the best {@link SeekableSource} implementation based
+     * on the size of the file and bitness of the JVM.
+     *
+     * @return a {@link SeekableSource} from the given path.
+     * @throws IOException
+     */
+    public static SeekableSource seekableSourceFrom(Path path) throws IOException {
+        requireNonNull(path);
+        return seekableSourceFrom(path.toFile());
+    }
+
+    /**
      * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is read an stored in a byte array with a max size of 2GB.
-     * 
+     *
      * @param stream
      * @return a {@link SeekableSource} from the given stream.
      * @throws IOException
@@ -89,7 +100,7 @@ public final class SeekableSources {
 
     /**
      * Factory method to create a {@link SeekableSource} from a byte array.
-     * 
+     *
      * @param bytes
      * @return a {@link SeekableSource} wrapping the given byte array.
      */
@@ -111,7 +122,7 @@ public final class SeekableSources {
 
     /**
      * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is copied to a temporary file.
-     * 
+     *
      * @param stream
      * @param filenameHint name to use for the temp file that will be created
      * @return a {@link SeekableSource} from the given stream.
@@ -121,10 +132,10 @@ public final class SeekableSources {
         requireNonNull(stream);
         File tempDir = Files.createTempDirectory("SejdaIODir").toFile();
         File temp = new File(tempDir, filenameHint);
-        if(temp.exists()) {
-            throw new RuntimeException("Temp file collision: "+ temp.getAbsolutePath());
+        if (temp.exists()) {
+            throw new RuntimeException("Temp file collision: " + temp.getAbsolutePath());
         }
-        
+
         Files.copy(stream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return new BufferedSeekableSource(new FileChannelSeekableSource(temp) {
             @Override

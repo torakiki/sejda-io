@@ -32,16 +32,14 @@ import org.sejda.commons.util.IOUtils;
  */
 public class BufferedSeekableSource extends BaseSeekableSource {
 
-    private ByteBuffer buffer = ByteBuffer
+    private final ByteBuffer buffer = ByteBuffer
             .allocate(Integer.getInteger(SeekableSources.INPUT_BUFFER_SIZE_PROPERTY, 8192));
-    private SeekableSource wrapped;
+    private final SeekableSource wrapped;
     private long position;
-    private long size;
+    private final long size;
 
     public BufferedSeekableSource(SeekableSource wrapped) {
-        super(ofNullable(wrapped).map(SeekableSource::id).orElseThrow(() -> {
-            return new IllegalArgumentException("Input decorated SeekableSource cannot be null");
-        }));
+        super(ofNullable(wrapped).map(SeekableSource::id).orElseThrow(() -> new IllegalArgumentException("Input decorated SeekableSource cannot be null")));
         this.wrapped = wrapped;
         this.size = wrapped.size();
         this.buffer.limit(0);

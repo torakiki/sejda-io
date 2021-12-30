@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -35,7 +36,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 /**
  * @author Andrea Vacondio
- *
  */
 public class SeekableSourcesTest {
 
@@ -55,9 +55,11 @@ public class SeekableSourcesTest {
     @Test
     public void nullSeekableSourceFrom() {
         assertThrows(NullPointerException.class, () -> {
-            SeekableSources.seekableSourceFrom(null);
+            SeekableSources.seekableSourceFrom((File) null);
         });
-
+        assertThrows(NullPointerException.class, () -> {
+            SeekableSources.seekableSourceFrom((Path) null);
+        });
     }
 
     @Test
@@ -95,7 +97,7 @@ public class SeekableSourcesTest {
             System.setProperty(SeekableSources.MAPPED_SIZE_THRESHOLD_PROPERTY, "10");
             Path tempFile = Files.createTempFile("SejdaIO", null);
             Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                    StandardCopyOption.REPLACE_EXISTING);
+                       StandardCopyOption.REPLACE_EXISTING);
             SeekableSource source = SeekableSources.seekableSourceFrom(tempFile.toFile());
             assertNotNull(source);
             assertTrue(source instanceof BufferedSeekableSource);
@@ -112,7 +114,7 @@ public class SeekableSourcesTest {
             System.setProperty(SeekableSources.DISABLE_MEMORY_MAPPED_PROPERTY, "true");
             Path tempFile = Files.createTempFile("SejdaIO", null);
             Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                    StandardCopyOption.REPLACE_EXISTING);
+                       StandardCopyOption.REPLACE_EXISTING);
             SeekableSource source = SeekableSources.seekableSourceFrom(tempFile.toFile());
             assertNotNull(source);
             assertTrue(source instanceof BufferedSeekableSource);
@@ -130,7 +132,7 @@ public class SeekableSourcesTest {
             System.setProperty("sun.arch.data.model", "32");
             Path tempFile = Files.createTempFile("SejdaIO", null);
             Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                    StandardCopyOption.REPLACE_EXISTING);
+                       StandardCopyOption.REPLACE_EXISTING);
             SeekableSource source = SeekableSources.seekableSourceFrom(tempFile.toFile());
             assertNotNull(source);
             assertTrue(source instanceof BufferedSeekableSource);

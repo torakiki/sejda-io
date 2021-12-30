@@ -32,9 +32,7 @@ public class ByteArraySeekableSource extends BaseSeekableSource {
     private long position;
 
     public ByteArraySeekableSource(byte[] bytes) {
-        super(ofNullable(bytes).map(UUID::nameUUIDFromBytes).map(UUID::toString).orElseThrow(() -> {
-            return new IllegalArgumentException("Input byte array cannot be null");
-        }));
+        super(ofNullable(bytes).map(UUID::nameUUIDFromBytes).map(UUID::toString).orElseThrow(() -> new IllegalArgumentException("Input byte array cannot be null")));
         this.bytes = bytes;
     }
 

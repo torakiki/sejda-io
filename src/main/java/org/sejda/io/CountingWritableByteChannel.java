@@ -36,7 +36,7 @@ import org.sejda.commons.util.IOUtils;
 public class CountingWritableByteChannel implements WritableByteChannel {
 
     private long written = 0;
-    private WritableByteChannel wrapped;
+    private final WritableByteChannel wrapped;
 
     public CountingWritableByteChannel(WritableByteChannel wrapped) {
         requireNotNullArg(wrapped, "Cannot decorate a null instance");

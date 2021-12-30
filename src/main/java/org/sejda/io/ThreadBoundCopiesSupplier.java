@@ -32,7 +32,7 @@ import org.sejda.commons.util.IOUtils;
  */
 public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable, SeekableSourceSupplier<T> {
 
-    private ConcurrentMap<Long, T> copies = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, T> copies = new ConcurrentHashMap<>();
 
     private final SeekableSourceSupplier<T> supplier;
 
@@ -59,6 +59,6 @@ public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Clos
 
     @Override
     public void close() {
-        copies.values().stream().forEach(IOUtils::closeQuietly);
+        copies.values().forEach(IOUtils::closeQuietly);
     }
 }

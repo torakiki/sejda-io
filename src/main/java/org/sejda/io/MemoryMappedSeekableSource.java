@@ -15,69 +15,79 @@
  */
 package org.sejda.io;
 
-import static java.util.Optional.ofNullable;
-import static org.sejda.commons.util.RequireUtils.requireArg;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-
-import org.sejda.io.util.IOUtils;
+import jdk.incubator.foreign.MemorySegment;
+import jdk.incubator.foreign.ResourceScope;
+import org.sejda.commons.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import static java.util.Optional.ofNullable;
+import static org.sejda.commons.util.RequireUtils.requireArg;
+
 /**
- * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination algorithm allowing to
- * open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY} system property.
- * 
- * @author Andrea Vacondio
+ * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination
+ * algorithm allowing to open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY}
+ * system property.
  *
+ * @author Andrea Vacondio
  */
 public class MemoryMappedSeekableSource extends BaseSeekableSource {
     private static final Logger LOG = LoggerFactory.getLogger(MemoryMappedSeekableSource.class);
     private static final long MB_256 = 1 << 28;
 
     private final long pageSize = Long.getLong(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, MB_256);
-    private List<ByteBuffer> pages = new ArrayList<>();
+    private final List<Page> pages = new ArrayList<>();
+    private final long size;
+    private final ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier;
     private long position;
-    private long size;
-    private ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
-            () -> new MemoryMappedSeekableSource(this));
-    private Consumer<? super ByteBuffer> unmapper = IOUtils::unmap;
+
+    public MemoryMappedSeekableSource(Path file) throws IOException {
+        super(ofNullable(file).map(f -> f.normalize().toString()).orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
+        this.size = Files.size(file);
+        int zeroBasedPagesNumber = (int) (this.size / pageSize);
+        for (int i = 0; i <= zeroBasedPagesNumber; i++) {
+            if (i == zeroBasedPagesNumber) {
+                var segment = MemorySegment.mapFile(file,
+                                                    i * pageSize,
+                                                    this.size - (i * pageSize),
+                                                    FileChannel.MapMode.READ_ONLY,
+                                                    ResourceScope.newSharedScope());
+                pages.add(new Page(segment.asByteBuffer(), segment.scope()));
+            } else {
+                var segment = MemorySegment.mapFile(file,
+                                                    i * pageSize,
+                                                    pageSize,
+                                                    FileChannel.MapMode.READ_ONLY,
+                                                    ResourceScope.newSharedScope());
+                pages.add(new Page(segment.asByteBuffer(), segment.scope()));
+            }
+        }
+        this.localCopiesSupplier = new ThreadBoundCopiesSupplier<>(() -> new MemoryMappedSeekableSource(this));
+        LOG.debug("Created MemoryMappedSeekableSource with " + pages.size() + " pages");
+    }
 
     public MemoryMappedSeekableSource(File file) throws IOException {
-        super(ofNullable(file).map(File::getAbsolutePath).orElseThrow(() -> {
-            return new IllegalArgumentException("Input file cannot be null");
-        }));
-        try (FileChannel channel = new RandomAccessFile(file, "r").getChannel()) {
-            this.size = channel.size();
-            int zeroBasedPagesNumber = (int) (channel.size() / pageSize);
-            for (int i = 0; i <= zeroBasedPagesNumber; i++) {
-                if (i == zeroBasedPagesNumber) {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, channel.size() - (i * pageSize)));
-                } else {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize));
-                }
-            }
-            LOG.debug("Created MemoryMappedSeekableSource with " + pages.size() + " pages");
-        }
+        this(ofNullable(file).map(File::toPath).orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
     }
 
     private MemoryMappedSeekableSource(MemoryMappedSeekableSource parent) {
         super(parent.id());
         this.size = parent.size;
-        for (ByteBuffer page : parent.pages) {
-            this.pages.add(page.duplicate());
+        for (Page page : parent.pages) {
+            //no scope for the sources used in views
+            this.pages.add(new Page(page.buffer().duplicate(), null));
         }
-        // unmap doesn't work on duplicate, see Unsafe#invokeCleaner
-        this.unmapper = null;
+        this.localCopiesSupplier = null;
     }
 
     @Override
@@ -101,7 +111,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     public int read(ByteBuffer dst) throws IOException {
         requireOpen();
         int zeroBasedPagesNumber = (int) (position() / pageSize);
-        ByteBuffer page = pages.get(zeroBasedPagesNumber);
+        var page = pages.get(zeroBasedPagesNumber).buffer();
         int relativePosition = (int) (position() - (zeroBasedPagesNumber * pageSize));
         if (relativePosition < page.limit()) {
             int read = readPage(dst, zeroBasedPagesNumber, relativePosition);
@@ -120,7 +130,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
 
     private int readPage(ByteBuffer dst, int pageNumber, int bufferPosition) {
         if (pageNumber < pages.size()) {
-            ByteBuffer page = pages.get(pageNumber);
+            var page = pages.get(pageNumber).buffer();
             page.position(bufferPosition);
             if (page.hasRemaining()) {
                 int toRead = Math.min(dst.remaining(), page.remaining());
@@ -137,7 +147,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     public int read() throws IOException {
         requireOpen();
         int zeroBasedPagesNumber = (int) (position() / pageSize);
-        ByteBuffer page = pages.get(zeroBasedPagesNumber);
+        var page = pages.get(zeroBasedPagesNumber).buffer();
         int relativePosition = (int) (position() - (zeroBasedPagesNumber * pageSize));
         if (relativePosition < page.limit()) {
             position++;
@@ -149,15 +159,19 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     @Override
     public void close() throws IOException {
         super.close();
-        org.sejda.commons.util.IOUtils.close(localCopiesSupplier);
-        Optional.ofNullable(unmapper).ifPresent(m -> pages.stream().forEach(m));
-        pages.clear();
+        IOUtils.close(localCopiesSupplier);
+        this.pages.stream().map(Page::scope).filter(Objects::nonNull).forEach(ResourceScope::close);
+        this.pages.clear();
     }
 
     @Override
     public SeekableSource view(long startingPosition, long length) throws IOException {
         requireOpen();
         return new SeekableSourceView(localCopiesSupplier, id(), startingPosition, length);
+    }
+
+    private record Page(ByteBuffer buffer, ResourceScope scope) {
+        //nothing
     }
 
 }

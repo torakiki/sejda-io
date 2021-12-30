@@ -93,7 +93,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
 
     @Override
     @Test
-    public void view() throws IOException {
+    public void view() {
         assertThrows(RuntimeException.class, () -> {
             victim().view(0, 2);
         }, "Cannot create a view of a view");

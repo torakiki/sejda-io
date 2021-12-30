@@ -38,8 +38,8 @@ public class BufferedCountingChannelWriter implements Closeable {
     public static final String OUTPUT_BUFFER_SIZE_PROPERTY = "org.sejda.io.buffered.output.size";
     private static final byte EOL = '\n';
 
-    private CountingWritableByteChannel channel;
-    private ByteBuffer buffer = ByteBuffer.allocate(Integer.getInteger(OUTPUT_BUFFER_SIZE_PROPERTY, 4096));
+    private final CountingWritableByteChannel channel;
+    private final ByteBuffer buffer = ByteBuffer.allocate(Integer.getInteger(OUTPUT_BUFFER_SIZE_PROPERTY, 4096));
     private boolean onNewLine = false;
 
     public BufferedCountingChannelWriter(CountingWritableByteChannel channel) {
@@ -79,8 +79,8 @@ public class BufferedCountingChannelWriter implements Closeable {
      * @throws IOException
      */
     public void write(byte[] bytes) throws IOException {
-        for (int i = 0; i < bytes.length; i++) {
-            write(bytes[i]);
+        for (byte aByte : bytes) {
+            write(aByte);
         }
     }
 

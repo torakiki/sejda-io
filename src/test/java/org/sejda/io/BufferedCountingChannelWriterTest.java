@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.AfterEach;
@@ -119,7 +120,7 @@ public class BufferedCountingChannelWriterTest {
     public void writeString() throws IOException {
         victim.write("ChuckNorris");
         victim.close();
-        assertTrue(Arrays.equals("ChuckNorris".getBytes("ISO-8859-1"), out.toByteArray()));
+        assertTrue(Arrays.equals("ChuckNorris".getBytes(StandardCharsets.ISO_8859_1), out.toByteArray()));
     }
 
     @Test
@@ -137,7 +138,7 @@ public class BufferedCountingChannelWriterTest {
     public void writeInputStream() throws IOException {
         byte[] bytes = new byte[] { '1', '1', '2', '1', '1' };
         victim.write(bytes);
-        byte[] streamBytes = "ChuckNorris".getBytes("ISO-8859-1");
+        byte[] streamBytes = "ChuckNorris".getBytes(StandardCharsets.ISO_8859_1);
         ByteArrayInputStream is = new ByteArrayInputStream(streamBytes);
         victim.write(is);
         victim.close();

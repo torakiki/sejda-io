@@ -28,7 +28,7 @@ import java.io.IOException;
 public abstract class BaseSeekableSource implements SeekableSource {
 
     private boolean open = true;
-    private String id;
+    private final String id;
 
     public BaseSeekableSource(String id) {
         requireNotBlank(id, "SeekableSource id cannot be blank");

@@ -28,23 +28,19 @@ import org.sejda.commons.util.IOUtils;
 
 /**
  * A {@link SeekableSource} implementation based on {@link FileChannel}.
- * 
+ *
  * @author Andrea Vacondio
  */
 public class FileChannelSeekableSource extends BaseSeekableSource {
-    private FileChannel channel;
-    private File file;
-    private long size;
-    private ThreadBoundCopiesSupplier<FileChannelSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
-            () -> new FileChannelSeekableSource(file));
+    private final FileChannel channel;
+    private final long size;
+    private final ThreadBoundCopiesSupplier<FileChannelSeekableSource> localCopiesSupplier;
 
     public FileChannelSeekableSource(File file) throws IOException {
-        super(ofNullable(file).map(File::getAbsolutePath).orElseThrow(() -> {
-            return new IllegalArgumentException("Input file cannot be null");
-        }));
+        super(ofNullable(file).map(File::getAbsolutePath).orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
         this.channel = new RandomAccessFile(file, "r").getChannel();
         this.size = channel.size();
-        this.file = file;
+        this.localCopiesSupplier = new ThreadBoundCopiesSupplier<>(() -> new FileChannelSeekableSource(file));
     }
 
     @Override
