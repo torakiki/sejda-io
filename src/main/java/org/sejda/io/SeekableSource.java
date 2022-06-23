@@ -21,7 +21,7 @@ import java.nio.channels.ReadableByteChannel;
 
 /**
  * Readable source that provides random access capabilities.
- * 
+ *
  * @author Andrea Vacondio
  */
 public interface SeekableSource extends ReadableByteChannel {
@@ -39,7 +39,7 @@ public interface SeekableSource extends ReadableByteChannel {
     /**
      * Sets the source position. Setting the position to a value that is greater than the source's size is legal but does not change the size of the source. A later attempt to read
      * bytes at such a position will immediately return an end-of-file indication.
-     * 
+     *
      * @param position
      *            a non-negative long for the new position
      * @return this source
@@ -54,7 +54,7 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * Reads a byte of data from this source. The byte is returned as an integer in the range 0 to 255 ( {@code 0x00-0xff} ).
-     * 
+     *
      * @return the next byte of data, or {@code -1} if there is no more data.
      * @throws IOException
      */
@@ -73,7 +73,7 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * Skips backward the given number of bytes moving back the source position
-     * 
+     *
      * @param offset
      *            the number of bytes to skip back.
      * @return this source
@@ -91,7 +91,7 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * Skips backward moving back the source position of one byte
-     * 
+     *
      * @return this source
      * @throws IOException
      * @see SeekableSource#back(long)
@@ -101,9 +101,8 @@ public interface SeekableSource extends ReadableByteChannel {
     }
 
     /**
-     * 
      * Skips the given number of bytes moving forward the source position
-     * 
+     *
      * @param offset
      *            the number of bytes to skip .
      * @return this source
@@ -115,7 +114,7 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * Reads the next byte and sets the position back by one.
-     * 
+     *
      * @return the next byte or {@code -1} if there is no more data.
      * @throws IOException
      * @see #read()
@@ -130,7 +129,7 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * Reads the previous byte and sets the position back where it was.
-     * 
+     *
      * @return the previous byte or {@code -1} if we are at the beginning of the source.
      * @throws IOException
      * @see #read()
@@ -145,7 +144,7 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * Creates an {@link InputStream} from this {@link SeekableSource}.
-     * 
+     *
      * @return the input stream wrapping the given {@link SeekableSource}
      */
     default InputStream asInputStream() {
@@ -164,6 +163,10 @@ public interface SeekableSource extends ReadableByteChannel {
         }
     }
 
+    /**
+     * @throws IllegalStateException if the source is closed
+     * @throws IOException
+     */
     void requireOpen() throws IOException;
 
     /**
@@ -173,7 +176,6 @@ public interface SeekableSource extends ReadableByteChannel {
      */
     default InputStream asNewInputStream() {
         reset();
-
         return new SeekableSourceInputStream(this);
     }
 }
