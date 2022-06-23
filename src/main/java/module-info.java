@@ -20,5 +20,4 @@ module org.sejda.io {
     exports org.sejda.io;
     requires org.sejda.commons;
     requires org.slf4j;
-    requires jdk.incubator.foreign;
 }
