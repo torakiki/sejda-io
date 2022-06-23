@@ -17,6 +17,9 @@ package org.sejda.io;
 
 import static java.util.Optional.ofNullable;
 import static org.sejda.commons.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireNotBlank;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
+import static org.sejda.commons.util.RequireUtils.requireState;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -27,24 +30,40 @@ import org.sejda.commons.util.IOUtils;
  * {@link SeekableSource} wrapping an existing one and providing buffered read. When a read method is called, a {@link SeekableSources#INPUT_BUFFER_SIZE_PROPERTY} long chunk of
  * bytes is read from the underlying source and stored in memory. Subsequent reads are served from the in memory buffer until they fall outside its range, at that point a new
  * buffer is read from the wrapped source.
- * 
+ *
  * @author Andrea Vacondio
  */
-public class BufferedSeekableSource extends BaseSeekableSource {
+public class BufferedSeekableSource implements SeekableSource {
 
-    private ByteBuffer buffer = ByteBuffer
-            .allocate(Integer.getInteger(SeekableSources.INPUT_BUFFER_SIZE_PROPERTY, 8192));
+    private ByteBuffer buffer = ByteBuffer.allocate(
+            Integer.getInteger(SeekableSources.INPUT_BUFFER_SIZE_PROPERTY, 8192));
     private SeekableSource wrapped;
     private long position;
     private long size;
 
     public BufferedSeekableSource(SeekableSource wrapped) {
-        super(ofNullable(wrapped).map(SeekableSource::id).orElseThrow(() -> {
-            return new IllegalArgumentException("Input decorated SeekableSource cannot be null");
-        }));
+        requireNotNullArg(wrapped, "Input decorated SeekableSource cannot be null");
         this.wrapped = wrapped;
         this.size = wrapped.size();
         this.buffer.limit(0);
+    }
+
+    @Override
+    public boolean isOpen() {
+        return this.wrapped.isOpen();
+    }
+
+    @Override
+    public void requireOpen() throws IOException {
+        this.wrapped.requireOpen();
+    }
+
+    /**
+     * @return the unique id for this source
+     */
+    @Override
+    public String id() {
+        return this.wrapped.id();
     }
 
     @Override
@@ -75,7 +94,6 @@ public class BufferedSeekableSource extends BaseSeekableSource {
 
     @Override
     public void close() throws IOException {
-        super.close();
         IOUtils.close(wrapped);
         buffer.clear();
         buffer.limit(0);

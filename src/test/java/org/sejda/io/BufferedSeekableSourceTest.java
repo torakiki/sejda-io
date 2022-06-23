@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 
 /**
  * @author Andrea Vacondio
- *
  */
 public class BufferedSeekableSourceTest extends BaseTestSeekableSource {
     private ByteArraySeekableSource wrapped;
@@ -109,6 +108,12 @@ public class BufferedSeekableSourceTest extends BaseTestSeekableSource {
         victim.position(20);
         assertEquals(3, victim.position());
         assertEquals(-1, victim.read());
+    }
+
+    @Test
+    public void closedWrapped() throws IOException {
+        this.wrapped.close();
+        assertFalse(victim.isOpen());
     }
 
     @Override
