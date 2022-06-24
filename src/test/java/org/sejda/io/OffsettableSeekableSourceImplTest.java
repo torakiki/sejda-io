@@ -42,9 +42,21 @@ public class OffsettableSeekableSourceImplTest extends BaseTestSeekableSource {
 
     @Test
     public void failingConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new OffsettableSeekableSourceImpl(null);
-        }, "Input decorated SeekableSource cannot be null");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> new OffsettableSeekableSourceImpl(null));
+        assertEquals("Input decorated SeekableSource cannot be null", e.getMessage());
+    }
+
+    @Test
+    public void negativeOffset() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> victim.offset(-4));
+        assertEquals("Cannot set a negative offset", e.getMessage());
+    }
+
+    @Test
+    public void tooBigOffset() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> victim.offset(7));
+        assertEquals("Invalid offset bigger then the wrapped source size", e.getMessage());
     }
 
     @Test
