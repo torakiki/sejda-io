@@ -15,18 +15,12 @@
  */
 package org.sejda.io.util;
 
-import static java.lang.invoke.MethodHandles.constant;
-import static java.lang.invoke.MethodHandles.dropArguments;
-import static java.lang.invoke.MethodHandles.filterReturnValue;
-import static java.lang.invoke.MethodHandles.guardWithTest;
-import static java.lang.invoke.MethodHandles.lookup;
-import static java.lang.invoke.MethodType.methodType;
-import static java.util.Objects.nonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -34,8 +28,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.lang.invoke.MethodHandles.lookup;
+import static java.lang.invoke.MethodType.methodType;
+import static java.util.Objects.nonNull;
 
 /**
  * Utility class with I/O related static methods
@@ -46,8 +41,8 @@ public final class IOUtils {
     private static final Optional<Consumer<ByteBuffer>> UNMAPPER;
 
     static {
-        UNMAPPER = Optional
-                .ofNullable(AccessController.doPrivileged((PrivilegedAction<Consumer<ByteBuffer>>) IOUtils::unmapper));
+        UNMAPPER = Optional.ofNullable(
+                AccessController.doPrivileged((PrivilegedAction<Consumer<ByteBuffer>>) IOUtils::unmapper));
     }
 
     private IOUtils() {
@@ -74,80 +69,20 @@ public final class IOUtils {
      * 
      * @return
      */
-    //java 9 or above
-//    private static Consumer<ByteBuffer> unmapper() {
-//        final Lookup lookup = lookup();
-//        try {
-//            // *** sun.misc.Unsafe unmapping (Java 9+) ***
-//            final Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
-//            // first check if Unsafe has the right method, otherwise we can give up
-//            // without doing any security critical stuff:
-//            final MethodHandle unmapper = lookup.findVirtual(unsafeClass, "invokeCleaner",
-//                    methodType(void.class, ByteBuffer.class));
-//            // fetch the unsafe instance and bind it to the virtual MH:
-//            final Field f = unsafeClass.getDeclaredField("theUnsafe");
-//            f.setAccessible(true);
-//            final Object theUnsafe = f.get(null);
-//            return newBufferCleaner(ByteBuffer.class, unmapper.bindTo(theUnsafe));
-//        } catch (SecurityException se) {
-//            LOG.error(
-//                    "Unmapping is not supported because of missing permissions. Please grant at least the following permissions: RuntimePermission(\"accessClassInPackage.sun.misc\") "
-//                            + " and ReflectPermission(\"suppressAccessChecks\")",
-//                    se);
-//
-//        } catch (ReflectiveOperationException | RuntimeException e) {
-//            LOG.error("Unmapping is not supported.", e);
-//        }
-//        return null;
-//    }
-
-    /**
-     * This is adapted from org.apache.lucene.store.MMapDirectory
-     * 
-     * @return
-     */
     private static Consumer<ByteBuffer> unmapper() {
         final Lookup lookup = lookup();
         try {
-            try {
-                // *** sun.misc.Unsafe unmapping (Java 9+) ***
-                final Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
-                // first check if Unsafe has the right method, otherwise we can give up
-                // without doing any security critical stuff:
-                final MethodHandle unmapper = lookup.findVirtual(unsafeClass, "invokeCleaner",
-                        methodType(void.class, ByteBuffer.class));
-                // fetch the unsafe instance and bind it to the virtual MH:
-                final Field f = unsafeClass.getDeclaredField("theUnsafe");
-                f.setAccessible(true);
-                final Object theUnsafe = f.get(null);
-                return newBufferCleaner(ByteBuffer.class, unmapper.bindTo(theUnsafe));
-            } catch (SecurityException se) {
-                // rethrow to report errors correctly (we need to catch it here, as we also catch RuntimeException below!):
-                throw se;
-            } catch (ReflectiveOperationException | RuntimeException e) {
-                // *** sun.misc.Cleaner unmapping (Java 8) ***
-                final Class<?> directBufferClass = Class.forName("java.nio.DirectByteBuffer");
-
-                final Method m = directBufferClass.getMethod("cleaner");
-                m.setAccessible(true);
-                final MethodHandle directBufferCleanerMethod = lookup.unreflect(m);
-                final Class<?> cleanerClass = directBufferCleanerMethod.type().returnType();
-
-                /*
-                 * "Compile" a MH that basically is equivalent to the following code: void unmapper(ByteBuffer byteBuffer) { sun.misc.Cleaner cleaner = ((java.nio.DirectByteBuffer)
-                 * byteBuffer).cleaner(); if (Objects.nonNull(cleaner)) { cleaner.clean(); } else { noop(cleaner); // the noop is needed because MethodHandles#guardWithTest always
-                 * needs ELSE } }
-                 */
-                final MethodHandle cleanMethod = lookup.findVirtual(cleanerClass, "clean", methodType(void.class));
-                final MethodHandle nonNullTest = lookup
-                        .findStatic(Objects.class, "nonNull", methodType(boolean.class, Object.class))
-                        .asType(methodType(boolean.class, cleanerClass));
-                final MethodHandle noop = dropArguments(constant(Void.class, null).asType(methodType(void.class)), 0,
-                        cleanerClass);
-                final MethodHandle unmapper = filterReturnValue(directBufferCleanerMethod,
-                        guardWithTest(nonNullTest, cleanMethod, noop)).asType(methodType(void.class, ByteBuffer.class));
-                return newBufferCleaner(directBufferClass, unmapper);
-            }
+            // *** sun.misc.Unsafe unmapping (Java 9+) ***
+            final Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            // first check if Unsafe has the right method, otherwise we can give up
+            // without doing any security critical stuff:
+            final MethodHandle unmapper = lookup.findVirtual(unsafeClass, "invokeCleaner",
+                    methodType(void.class, ByteBuffer.class));
+            // fetch the unsafe instance and bind it to the virtual MH:
+            final Field f = unsafeClass.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            final Object theUnsafe = f.get(null);
+            return newBufferCleaner(ByteBuffer.class, unmapper.bindTo(theUnsafe));
         } catch (SecurityException se) {
             LOG.error(
                     "Unmapping is not supported because of missing permissions. Please grant at least the following permissions: RuntimePermission(\"accessClassInPackage.sun.misc\") "
