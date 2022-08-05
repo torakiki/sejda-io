@@ -15,7 +15,7 @@
  */
 package org.sejda.io;
 
-import static java.util.Objects.requireNonNull;
+import org.sejda.commons.util.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import org.sejda.commons.util.IOUtils;
+import static java.util.Objects.requireNonNull;
 
 /**
  * This class consists of solely static methods to create the most appropriate {@link SeekableSource} based on the given input or to bridge {@link SeekableSource}s to the more
@@ -76,7 +76,7 @@ public final class SeekableSources {
     }
 
     /**
-     * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is read an stored in a byte array with a max size of 2GB.
+     * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is read and stored in a byte array with a max size of 2GB.
      *
      * @param stream
      * @return a {@link SeekableSource} from the given stream.

@@ -15,7 +15,7 @@
  */
 package org.sejda.io;
 
-import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
+import org.sejda.commons.util.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.WritableByteChannel;
 
-import org.sejda.commons.util.IOUtils;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
  * A {@link WritableByteChannel} that keeps track of the number of written bytes
@@ -36,7 +36,7 @@ import org.sejda.commons.util.IOUtils;
 public class CountingWritableByteChannel implements WritableByteChannel {
 
     private long written = 0;
-    private WritableByteChannel wrapped;
+    private final WritableByteChannel wrapped;
 
     public CountingWritableByteChannel(WritableByteChannel wrapped) {
         requireNotNullArg(wrapped, "Cannot decorate a null instance");

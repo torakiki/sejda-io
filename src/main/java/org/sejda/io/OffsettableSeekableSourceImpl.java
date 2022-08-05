@@ -30,7 +30,7 @@ import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
  */
 class OffsettableSeekableSourceImpl implements OffsettableSeekableSource {
 
-    private SeekableSource wrapped;
+    private final SeekableSource wrapped;
     private long offset = 0;
 
     public OffsettableSeekableSourceImpl(SeekableSource wrapped) {

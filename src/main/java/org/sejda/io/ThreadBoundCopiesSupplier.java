@@ -15,24 +15,24 @@
  */
 package org.sejda.io;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
+import org.sejda.commons.util.IOUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.sejda.commons.util.IOUtils;
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
 
 /**
- * Component suppling per-thread copies of a {@link SeekableSource} using the provided supplier. When closed, all the generated copies are closed as well.
- * 
+ * Component supplying per-thread copies of a {@link SeekableSource} using the provided supplier. When closed, all the generated copies are closed as well.
+ *
  * @author Andrea Vacondio
  */
 public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable, SeekableSourceSupplier<T> {
 
-    private ConcurrentMap<Long, T> copies = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, T> copies = new ConcurrentHashMap<>();
 
     private final SeekableSourceSupplier<T> supplier;
 
@@ -59,6 +59,6 @@ public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Clos
 
     @Override
     public void close() {
-        copies.values().stream().forEach(IOUtils::closeQuietly);
+        copies.values().forEach(IOUtils::closeQuietly);
     }
 }

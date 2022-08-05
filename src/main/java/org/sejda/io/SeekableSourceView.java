@@ -15,12 +15,12 @@
  */
 package org.sejda.io;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import static org.sejda.commons.util.RequireUtils.requireArg;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 import static org.sejda.commons.util.RequireUtils.requireState;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed. The view
@@ -29,7 +29,7 @@ import java.nio.ByteBuffer;
  * @author Andrea Vacondio
  */
 class SeekableSourceView extends BaseSeekableSource {
-    private long startingPosition;
+    private final long startingPosition;
     private long length;
     private long currentPosition;
     private SeekableSourceSupplier<? extends SeekableSource> supplier;

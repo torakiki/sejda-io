@@ -15,8 +15,9 @@
  */
 package org.sejda.io;
 
-import static java.util.Optional.ofNullable;
-import static org.sejda.commons.util.RequireUtils.requireArg;
+import org.sejda.io.util.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,14 +30,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.sejda.io.util.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Optional.ofNullable;
+import static org.sejda.commons.util.RequireUtils.requireArg;
 
 /**
  * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination algorithm allowing to
  * open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY} system property.
- * 
+ *
  * @author Andrea Vacondio
  *
  */
@@ -45,17 +45,16 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     private static final long MB_256 = 1 << 28;
 
     private final long pageSize = Long.getLong(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, MB_256);
-    private List<ByteBuffer> pages = new ArrayList<>();
+    private final List<ByteBuffer> pages = new ArrayList<>();
     private long position;
-    private long size;
-    private ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
+    private final long size;
+    private final ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
             () -> new MemoryMappedSeekableSource(this));
     private Consumer<? super ByteBuffer> unmapper = IOUtils::unmap;
 
     public MemoryMappedSeekableSource(File file) throws IOException {
-        super(ofNullable(file).map(File::getAbsolutePath).orElseThrow(() -> {
-            return new IllegalArgumentException("Input file cannot be null");
-        }));
+        super(ofNullable(file).map(File::getAbsolutePath)
+                .orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
         try (FileChannel channel = new RandomAccessFile(file, "r").getChannel()) {
             this.size = channel.size();
             int zeroBasedPagesNumber = (int) (channel.size() / pageSize);
@@ -150,7 +149,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     public void close() throws IOException {
         super.close();
         org.sejda.commons.util.IOUtils.close(localCopiesSupplier);
-        Optional.ofNullable(unmapper).ifPresent(m -> pages.stream().forEach(m));
+        Optional.ofNullable(unmapper).ifPresent(pages::forEach);
         pages.clear();
     }
 

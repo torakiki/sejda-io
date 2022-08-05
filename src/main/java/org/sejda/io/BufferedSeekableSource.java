@@ -15,16 +15,13 @@
  */
 package org.sejda.io;
 
-import static java.util.Optional.ofNullable;
-import static org.sejda.commons.util.RequireUtils.requireArg;
-import static org.sejda.commons.util.RequireUtils.requireNotBlank;
-import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
-import static org.sejda.commons.util.RequireUtils.requireState;
+import org.sejda.commons.util.IOUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.sejda.commons.util.IOUtils;
+import static org.sejda.commons.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
  * {@link SeekableSource} wrapping an existing one and providing buffered read. When a read method is called, a {@link SeekableSources#INPUT_BUFFER_SIZE_PROPERTY} long chunk of
@@ -35,11 +32,11 @@ import org.sejda.commons.util.IOUtils;
  */
 public class BufferedSeekableSource implements SeekableSource {
 
-    private ByteBuffer buffer = ByteBuffer.allocate(
+    private final ByteBuffer buffer = ByteBuffer.allocate(
             Integer.getInteger(SeekableSources.INPUT_BUFFER_SIZE_PROPERTY, 8192));
-    private SeekableSource wrapped;
+    private final SeekableSource wrapped;
     private long position;
-    private long size;
+    private final long size;
 
     public BufferedSeekableSource(SeekableSource wrapped) {
         requireNotNullArg(wrapped, "Input decorated SeekableSource cannot be null");

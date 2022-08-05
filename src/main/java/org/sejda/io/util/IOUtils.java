@@ -70,24 +70,23 @@ public final class IOUtils {
      * @return
      */
     private static Consumer<ByteBuffer> unmapper() {
-        final Lookup lookup = lookup();
+        Lookup lookup = lookup();
         try {
             // *** sun.misc.Unsafe unmapping (Java 9+) ***
-            final Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
             // first check if Unsafe has the right method, otherwise we can give up
             // without doing any security critical stuff:
-            final MethodHandle unmapper = lookup.findVirtual(unsafeClass, "invokeCleaner",
+            MethodHandle unmapper = lookup.findVirtual(unsafeClass, "invokeCleaner",
                     methodType(void.class, ByteBuffer.class));
             // fetch the unsafe instance and bind it to the virtual MH:
-            final Field f = unsafeClass.getDeclaredField("theUnsafe");
+            Field f = unsafeClass.getDeclaredField("theUnsafe");
             f.setAccessible(true);
-            final Object theUnsafe = f.get(null);
+            Object theUnsafe = f.get(null);
             return newBufferCleaner(ByteBuffer.class, unmapper.bindTo(theUnsafe));
         } catch (SecurityException se) {
             LOG.error(
                     "Unmapping is not supported because of missing permissions. Please grant at least the following permissions: RuntimePermission(\"accessClassInPackage.sun.misc\") "
-                            + " and ReflectPermission(\"suppressAccessChecks\")",
-                    se);
+                            + " and ReflectPermission(\"suppressAccessChecks\")", se);
 
         } catch (ReflectiveOperationException | RuntimeException e) {
             LOG.error("Unmapping is not supported.", e);
@@ -95,8 +94,7 @@ public final class IOUtils {
         return null;
     }
 
-    private static Consumer<ByteBuffer> newBufferCleaner(final Class<?> unmappableBufferClass,
-            final MethodHandle unmapper) {
+    private static Consumer<ByteBuffer> newBufferCleaner(Class<?> unmappableBufferClass, MethodHandle unmapper) {
         assert Objects.equals(methodType(void.class, ByteBuffer.class), unmapper.type());
         return (ByteBuffer buffer) -> {
             if (!buffer.isDirect()) {
@@ -105,7 +103,7 @@ public final class IOUtils {
             if (!unmappableBufferClass.isInstance(buffer)) {
                 throw new IllegalArgumentException("buffer is not an instance of " + unmappableBufferClass.getName());
             }
-            final Throwable e = AccessController.doPrivileged((PrivilegedAction<Throwable>) () -> {
+            Throwable e = AccessController.doPrivileged((PrivilegedAction<Throwable>) () -> {
                 try {
                     unmapper.invokeExact(buffer);
                     return null;
