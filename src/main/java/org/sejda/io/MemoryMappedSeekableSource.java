@@ -21,10 +21,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,10 +53,10 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
             () -> new MemoryMappedSeekableSource(this));
     private Consumer<? super ByteBuffer> unmapper = IOUtils::unmap;
 
-    public MemoryMappedSeekableSource(File file) throws IOException {
-        super(ofNullable(file).map(File::getAbsolutePath)
-                .orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
-        try (FileChannel channel = new RandomAccessFile(file, "r").getChannel()) {
+    public MemoryMappedSeekableSource(Path path) throws IOException {
+        super(ofNullable(path).map(Path::toAbsolutePath).map(Path::toString)
+                .orElseThrow(() -> new IllegalArgumentException("Input path cannot be null")));
+        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
             this.size = channel.size();
             int zeroBasedPagesNumber = (int) (channel.size() / pageSize);
             for (int i = 0; i <= zeroBasedPagesNumber; i++) {
@@ -67,6 +68,11 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
             }
             LOG.debug("Created MemoryMappedSeekableSource with " + pages.size() + " pages");
         }
+    }
+
+    public MemoryMappedSeekableSource(File file) throws IOException {
+        this(ofNullable(file).map(File::toPath)
+                .orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
     }
 
     private MemoryMappedSeekableSource(MemoryMappedSeekableSource parent) {

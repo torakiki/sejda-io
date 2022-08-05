@@ -21,14 +21,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,6 +41,7 @@ import static org.sejda.io.SeekableSources.asOffsettable;
 import static org.sejda.io.SeekableSources.inMemorySeekableSourceFrom;
 import static org.sejda.io.SeekableSources.onTempFileSeekableSourceFrom;
 import static org.sejda.io.SeekableSources.seekableSourceFrom;
+
 /**
  * @author Andrea Vacondio
  */
@@ -57,9 +61,16 @@ public class SeekableSourcesTest {
     }
 
     @Test
-    public void nullSeekableSourceFrom() {
+    public void nullFileSeekableSourceFrom() {
         assertThrows(NullPointerException.class, () -> {
-            seekableSourceFrom(null);
+            seekableSourceFrom((File) null);
+        });
+    }
+
+    @Test
+    public void nullPathSeekableSourceFrom() {
+        assertThrows(NullPointerException.class, () -> {
+            seekableSourceFrom((Path) null);
         });
 
     }
@@ -94,10 +105,17 @@ public class SeekableSourcesTest {
     }
 
     @Test
-    public void seekableSourceFromTest(@TempDir Path temp) throws IOException {
+    public void seekableSourceFromFile(@TempDir Path temp) throws IOException {
         Path test = temp.resolve("test.txt");
         Files.createFile(test);
         assertNotNull(seekableSourceFrom(test.toFile()));
+    }
+
+    @Test
+    public void seekableSourceFromPath(@TempDir Path temp) throws IOException {
+        Path test = temp.resolve("test.txt");
+        Files.createFile(test);
+        assertNotNull(seekableSourceFrom(test));
     }
 
     @Test
@@ -159,8 +177,7 @@ public class SeekableSourcesTest {
 
     @Test
     public void inMemorySeekableSourceFromStream() throws IOException {
-        assertNotNull(
-                inMemorySeekableSourceFrom(getClass().getResourceAsStream("/pdf/simple_test.pdf")));
+        assertNotNull(inMemorySeekableSourceFrom(getClass().getResourceAsStream("/pdf/simple_test.pdf")));
     }
 
     @Test
@@ -176,9 +193,16 @@ public class SeekableSourcesTest {
     @Test
     public void onTempFileSeekableSourceFromWithFilenameHint() throws IOException {
         String filenameHint = "input.pdf";
-        SeekableSource result = onTempFileSeekableSourceFrom(
-                new ByteArrayInputStream(new byte[] { -1 }), filenameHint);
+        SeekableSource result = onTempFileSeekableSourceFrom(new ByteArrayInputStream(new byte[] { -1 }), filenameHint);
         assertThat(result.id(), endsWith(filenameHint));
+    }
+
+    @Test
+    public void onTempFileSeekableSourceDeletesTempOnClose() throws IOException {
+        SeekableSource result = onTempFileSeekableSourceFrom(new ByteArrayInputStream(new byte[] { -1 }), "input.pdf");
+        assertTrue(Files.exists(Paths.get(result.id())));
+        result.close();
+        assertFalse(Files.exists(Paths.get(result.id())));
     }
 
 }

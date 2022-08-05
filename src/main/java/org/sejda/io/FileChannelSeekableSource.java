@@ -19,10 +19,11 @@ import org.sejda.commons.util.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import static java.util.Optional.ofNullable;
 import static org.sejda.commons.util.RequireUtils.requireArg;
@@ -34,21 +35,26 @@ import static org.sejda.commons.util.RequireUtils.requireArg;
  */
 public class FileChannelSeekableSource extends BaseSeekableSource {
     private final FileChannel channel;
-    private File file;
+    private Path path;
     private final long size;
     private final ThreadBoundCopiesSupplier<FileChannelSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
-            () -> new FileChannelSeekableSource(file));
+            () -> new FileChannelSeekableSource(path));
 
-    public FileChannelSeekableSource(File file) {
-        super(ofNullable(file).map(File::getAbsolutePath)
-                .orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
+    public FileChannelSeekableSource(Path path) {
+        super(ofNullable(path).map(Path::toAbsolutePath).map(Path::toString)
+                .orElseThrow(() -> new IllegalArgumentException("Input path cannot be null")));
         try {
-            this.channel = new RandomAccessFile(file, "r").getChannel();
+            this.channel = FileChannel.open(path, StandardOpenOption.READ);
             this.size = channel.size();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        this.file = file;
+        this.path = path;
+    }
+
+    public FileChannelSeekableSource(File file) {
+        this(ofNullable(file).map(File::toPath)
+                .orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
     }
 
     @Override
