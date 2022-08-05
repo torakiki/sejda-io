@@ -15,12 +15,11 @@
  */
 package org.sejda.io;
 
-import java.io.IOException;
+import java.util.function.Supplier;
 
 /**
  * @author Andrea Vacondio
  */
 @FunctionalInterface
-public interface SeekableSourceSupplier<T extends SeekableSource> {
-    T get() throws IOException;
+public interface SeekableSourceSupplier<T extends SeekableSource> extends Supplier<T> {
 }

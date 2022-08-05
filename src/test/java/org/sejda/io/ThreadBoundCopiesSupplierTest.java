@@ -15,24 +15,26 @@
  */
 package org.sejda.io;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.function.Supplier;
+
+import static java.util.Objects.nonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.function.Supplier;
-
-import org.junit.jupiter.api.Test;
-
 /**
  * @author Andrea Vacondio
- *
  */
 public class ThreadBoundCopiesSupplierTest {
 
@@ -46,7 +48,7 @@ public class ThreadBoundCopiesSupplierTest {
     }
 
     @Test
-    public void differentCopyPerThread() throws IOException, InterruptedException, ExecutionException {
+    public void differentCopyPerThread() throws InterruptedException, ExecutionException {
         SeekableSourceSupplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
         ThreadBoundCopiesSupplier<ByteArraySeekableSource> victim = new ThreadBoundCopiesSupplier<>(supplier);
         ByteArraySeekableSource first = victim.get();
@@ -63,7 +65,7 @@ public class ThreadBoundCopiesSupplierTest {
     }
 
     @Test
-    public void sameThreadSameCopy() throws IOException, InterruptedException, ExecutionException {
+    public void sameThreadSameCopy() throws InterruptedException, ExecutionException {
         SeekableSourceSupplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
         ThreadBoundCopiesSupplier<ByteArraySeekableSource> victim = new ThreadBoundCopiesSupplier<>(supplier);
         assertEquals(victim.get(), victim.get());
@@ -78,5 +80,22 @@ public class ThreadBoundCopiesSupplierTest {
         ByteArraySeekableSource first = CompletableFuture.supplyAsync(completableSupplier, executor).get();
         ByteArraySeekableSource second = CompletableFuture.supplyAsync(completableSupplier, executor).get();
         assertEquals(first, second);
+    }
+
+    @Test
+    @DisplayName("Each thread gets a different copy")
+    public void eachThreadGetsACopy() {
+        SeekableSourceSupplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
+        var victim = new ThreadBoundCopiesSupplier<>(supplier);
+        int numberOfThreads = 1000;
+        ConcurrentHashMap<ByteArraySeekableSource, Integer> results = new ConcurrentHashMap<>(numberOfThreads);
+
+        var service = Executors.newFixedThreadPool(numberOfThreads);
+        for (int i = 0; i < numberOfThreads; i++) {
+            service.execute(() -> results.compute(victim.get(), (k, v) -> nonNull(v) ? 1 : 0));
+        }
+        service.shutdown();
+        assertEquals(numberOfThreads, results.size());
+        assertEquals(0, results.values().stream().filter(i -> i > 0).count());
     }
 }

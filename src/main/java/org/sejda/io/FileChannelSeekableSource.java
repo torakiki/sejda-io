@@ -20,6 +20,7 @@ import org.sejda.commons.util.IOUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -38,11 +39,15 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
     private final ThreadBoundCopiesSupplier<FileChannelSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
             () -> new FileChannelSeekableSource(file));
 
-    public FileChannelSeekableSource(File file) throws IOException {
+    public FileChannelSeekableSource(File file) {
         super(ofNullable(file).map(File::getAbsolutePath)
                 .orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
-        this.channel = new RandomAccessFile(file, "r").getChannel();
-        this.size = channel.size();
+        try {
+            this.channel = new RandomAccessFile(file, "r").getChannel();
+            this.size = channel.size();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         this.file = file;
     }
 

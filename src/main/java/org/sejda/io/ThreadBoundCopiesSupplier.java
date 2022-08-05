@@ -18,11 +18,9 @@ package org.sejda.io;
 import org.sejda.commons.util.IOUtils;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -37,24 +35,13 @@ public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Clos
     private final SeekableSourceSupplier<T> supplier;
 
     public ThreadBoundCopiesSupplier(SeekableSourceSupplier<T> supplier) {
-        requireNonNull(supplier);
-        this.supplier = supplier;
+        this.supplier = requireNonNull(supplier);
     }
 
     @Override
-    public T get() throws IOException {
-        long id = Thread.currentThread().getId();
-        T copy = copies.get(id);
-        if (isNull(copy)) {
-            T newCopy = supplier.get();
-            copy = copies.putIfAbsent(id, newCopy);
-            if (isNull(copy)) {
-                copy = newCopy;
-            } else {
-                IOUtils.closeQuietly(newCopy);
-            }
-        }
-        return copy;
+    public T get() {
+        return copies.computeIfAbsent(Thread.currentThread().getId(), k -> supplier.get());
+
     }
 
     @Override
