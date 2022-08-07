@@ -19,7 +19,9 @@ import java.util.function.Supplier;
 
 /**
  * @author Andrea Vacondio
+ * @deprecated use {@link Supplier}
  */
 @FunctionalInterface
+@Deprecated
 public interface SeekableSourceSupplier<T extends SeekableSource> extends Supplier<T> {
 }

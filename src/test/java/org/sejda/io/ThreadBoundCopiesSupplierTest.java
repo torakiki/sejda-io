@@ -49,7 +49,7 @@ public class ThreadBoundCopiesSupplierTest {
 
     @Test
     public void differentCopyPerThread() throws InterruptedException, ExecutionException {
-        SeekableSourceSupplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
+        Supplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
         ThreadBoundCopiesSupplier<ByteArraySeekableSource> victim = new ThreadBoundCopiesSupplier<>(supplier);
         ByteArraySeekableSource first = victim.get();
         assertNotNull(first);
@@ -66,7 +66,7 @@ public class ThreadBoundCopiesSupplierTest {
 
     @Test
     public void sameThreadSameCopy() throws InterruptedException, ExecutionException {
-        SeekableSourceSupplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
+        Supplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
         ThreadBoundCopiesSupplier<ByteArraySeekableSource> victim = new ThreadBoundCopiesSupplier<>(supplier);
         assertEquals(victim.get(), victim.get());
         Executor executor = Executors.newSingleThreadExecutor();
@@ -85,7 +85,7 @@ public class ThreadBoundCopiesSupplierTest {
     @Test
     @DisplayName("Each thread gets a different copy")
     public void eachThreadGetsACopy() {
-        SeekableSourceSupplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
+        Supplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
         var victim = new ThreadBoundCopiesSupplier<>(supplier);
         int numberOfThreads = 1000;
         ConcurrentHashMap<ByteArraySeekableSource, Integer> results = new ConcurrentHashMap<>(numberOfThreads);

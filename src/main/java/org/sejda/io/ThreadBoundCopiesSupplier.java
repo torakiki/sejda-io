@@ -20,6 +20,7 @@ import org.sejda.commons.util.IOUtils;
 import java.io.Closeable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
@@ -28,13 +29,13 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Andrea Vacondio
  */
-public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable, SeekableSourceSupplier<T> {
+public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable, Supplier<T> {
 
     private final ConcurrentMap<Long, T> copies = new ConcurrentHashMap<>();
 
-    private final SeekableSourceSupplier<T> supplier;
+    private final Supplier<T> supplier;
 
-    public ThreadBoundCopiesSupplier(SeekableSourceSupplier<T> supplier) {
+    public ThreadBoundCopiesSupplier(Supplier<T> supplier) {
         this.supplier = requireNonNull(supplier);
     }
 
