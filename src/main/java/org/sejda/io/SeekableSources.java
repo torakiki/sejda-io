@@ -135,7 +135,7 @@ public final class SeekableSources {
         requireNonNull(stream);
         Path temp = Files.createTempDirectory("SejdaIODir").resolve(filenameHint);
         if (Files.exists(temp)) {
-            throw new RuntimeException("Temp file collision: " + temp.toAbsolutePath().toString());
+            throw new RuntimeException("Temp file collision: " + temp.toAbsolutePath());
         }
 
         Files.copy(stream, temp, StandardCopyOption.REPLACE_EXISTING);

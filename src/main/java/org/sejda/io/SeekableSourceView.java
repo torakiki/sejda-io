@@ -36,7 +36,7 @@ class SeekableSourceView extends BaseSeekableSource {
     private final Supplier<? extends SeekableSource> supplier;
 
     public SeekableSourceView(Supplier<? extends SeekableSource> supplier, String id, long startingPosition,
-            long length) throws IOException {
+            long length) {
         super(id);
         requireArg(startingPosition >= 0, "Starting position cannot be negative");
         requireArg(length > 0, "View length must be positive");

@@ -48,5 +48,6 @@ public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Clos
     @Override
     public void close() {
         copies.values().forEach(IOUtils::closeQuietly);
+        copies.clear();
     }
 }
