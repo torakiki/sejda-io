@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static java.util.Objects.nonNull;
@@ -84,7 +85,7 @@ public class ThreadBoundCopiesSupplierTest {
 
     @Test
     @DisplayName("Each thread gets a different copy")
-    public void eachThreadGetsACopy() {
+    public void eachThreadGetsACopy() throws InterruptedException {
         Supplier<ByteArraySeekableSource> supplier = () -> new ByteArraySeekableSource(new byte[0]);
         var victim = new ThreadBoundCopiesSupplier<>(supplier);
         int numberOfThreads = 1000;
@@ -95,6 +96,7 @@ public class ThreadBoundCopiesSupplierTest {
             service.execute(() -> results.compute(victim.get(), (k, v) -> nonNull(v) ? 1 : 0));
         }
         service.shutdown();
+        service.awaitTermination(5, TimeUnit.SECONDS);
         assertEquals(numberOfThreads, results.size());
         assertEquals(0, results.values().stream().filter(i -> i > 0).count());
     }
