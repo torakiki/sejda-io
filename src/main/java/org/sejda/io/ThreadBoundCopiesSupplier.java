@@ -41,7 +41,7 @@ public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Clos
 
     @Override
     public T get() {
-        return copies.computeIfAbsent(Thread.currentThread().getId(), k -> supplier.get());
+        return copies.computeIfAbsent(Thread.currentThread().threadId(), k -> supplier.get());
 
     }
 
