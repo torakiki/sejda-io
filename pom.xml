@@ -166,8 +166,17 @@
 				<version>3.10.1</version>
 				<configuration>
 					<release>19</release>
+					<!-- remove this once Foreign Function & Memory API is out of preview-->
 					<compilerArgs>--enable-preview</compilerArgs>
 				</configuration>
+				<dependencies>
+					<!-- remove this once mvn compiler includes it -->
+					<dependency>
+						<groupId>org.ow2.asm</groupId>
+						<artifactId>asm</artifactId>
+						<version>9.4</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -198,6 +207,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0-M7</version>
+				<configuration>
+					<!-- remove this once Foreign Function & Memory API is out of preview-->
+					<argLine>--enable-preview</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
