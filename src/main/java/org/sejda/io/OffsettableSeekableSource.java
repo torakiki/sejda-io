@@ -1,5 +1,6 @@
+package org.sejda.io;
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2022 Sober Lemur S.a.s. di Vacondio Andrea and Sejda BV
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.sejda.io;
 
-import java.util.function.Supplier;
+import java.io.IOException;
 
 /**
+ * A {@link SeekableSource} that can be offsetted by a given number of bytes
+ *
  * @author Andrea Vacondio
- * @deprecated use {@link Supplier}
  */
-@FunctionalInterface
-@Deprecated
-public interface SeekableSourceSupplier<T extends SeekableSource> extends Supplier<T> {
+public interface OffsettableSeekableSource extends SeekableSource {
+
+    /**
+     * Sets the offset for this source
+     *
+     * @param offset
+     * @throws IllegalArgumentException if the offset is negative or if it would lead to a negative size
+     */
+    void offset(long offset) throws IOException;
 }

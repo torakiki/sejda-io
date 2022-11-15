@@ -140,4 +140,18 @@ public abstract class BaseTestSeekableSource {
         assertEquals(-1, victim().peekBack());
     }
 
+    @Test
+    public void requireOpen() throws IOException {
+        assertTrue(victim().isOpen());
+        victim().requireOpen();
+    }
+
+    @Test
+    public void failingRequireOpen() throws IOException {
+        assertTrue(victim().isOpen());
+        victim().close();
+        assertThrows(IllegalStateException.class, () -> {
+            victim().requireOpen();
+        });
+    }
 }

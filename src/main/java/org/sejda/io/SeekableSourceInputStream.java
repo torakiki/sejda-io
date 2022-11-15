@@ -15,12 +15,12 @@
  */
 package org.sejda.io;
 
-import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
-import static org.sejda.commons.util.RequireUtils.requireState;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
+import static org.sejda.commons.util.RequireUtils.requireState;
 
 /**
  * Bridge between {@link SeekableSource} and {@link InputStream}

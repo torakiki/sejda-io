@@ -15,10 +15,10 @@
  */
 package org.sejda.io;
 
+import java.io.IOException;
+
 import static org.sejda.commons.util.RequireUtils.requireNotBlank;
 import static org.sejda.commons.util.RequireUtils.requireState;
-
-import java.io.IOException;
 
 /**
  * Abstract {@link SeekableSource} that provides base functionalities common to all the {@link SeekableSource}s.
@@ -45,11 +45,6 @@ public abstract class BaseSeekableSource implements SeekableSource {
         this.open = false;
     }
 
-    /**
-     * @throws IllegalStateException
-     *             if the source is closed
-     * @throws IOException
-     */
     @Override
     public void requireOpen() throws IOException {
         requireState(isOpen(), "The SeekableSource has been closed");

@@ -1,5 +1,15 @@
+package org.sejda.io;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2022 Sober Lemur S.a.s. di Vacondio Andrea and Sejda BV
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,43 +23,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.sejda.io;
+public class OffsettableSeekableSourceImplTest extends BaseTestSeekableSource {
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-/**
- * @author Andrea Vacondio
- */
-public class BufferedSeekableSourceTest extends BaseTestSeekableSource {
     private ByteArraySeekableSource wrapped;
-    private BufferedSeekableSource victim;
+    private OffsettableSeekableSource victim;
 
     @BeforeEach
-    public void setUp() {
-        wrapped = new ByteArraySeekableSource(new byte[] { 'a', 'b', 'c' });
-        victim = new BufferedSeekableSource(wrapped);
+    public void setUp() throws IOException {
+        wrapped = new ByteArraySeekableSource(new byte[] { 'd', 'e', 'f', 'a', 'b', 'c' });
+        victim = SeekableSources.asOffsettable(wrapped);
+        victim.offset(3);
+    }
+
+    @Test
+    public void size() {
+        assertEquals(3, victim.size());
     }
 
     @Test
     public void failingConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new BufferedSeekableSource(null);
-        }, "Input decorated SeekableSource cannot be null");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> new OffsettableSeekableSourceImpl(null));
+        assertEquals("Input decorated SeekableSource cannot be null", e.getMessage());
+    }
+
+    @Test
+    public void negativeOffset() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> victim.offset(-4));
+        assertEquals("Cannot set a negative offset", e.getMessage());
+    }
+
+    @Test
+    public void tooBigOffset() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> victim.offset(7));
+        assertEquals("Invalid offset bigger then the wrapped source size", e.getMessage());
     }
 
     @Test
     public void constructor() {
         assertEquals(wrapped.id(), victim.id());
-        assertEquals(wrapped.size(), victim.size());
     }
 
     @Override

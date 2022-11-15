@@ -5,7 +5,7 @@
 	<artifactId>sejda-io</artifactId>
 	<packaging>jar</packaging>
 	<name>sejda-io</name>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>4.0.0.M1-SNAPSHOT</version>
 
 	<description>An Input/Output layer built on top of Java standard io and nio packages</description>
 	<url>https://www.sejda.org</url>
@@ -23,7 +23,7 @@
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
 			<distribution>repo</distribution>
 			<comments>ASLv2</comments>
 		</license>
@@ -78,7 +78,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-toolchains-plugin</artifactId>
-						<version>3.0.0</version>
+						<version>3.1.0</version>
 						<executions>
 							<execution>
 								<goals>
@@ -104,7 +104,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.3.1</version>
+						<version>3.4.0</version>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>
@@ -122,7 +122,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-release-plugin</artifactId>
-						<version>3.0.0-M4</version>
+						<version>3.0.0-M5</version>
 						<configuration>
 							<tagNameFormat>v@{project.version}</tagNameFormat>
 							<preparationGoals>clean install</preparationGoals>
@@ -145,7 +145,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.8</version>
+						<version>1.6.13</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
@@ -163,7 +163,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.10.1</version>
 				<configuration>
 					<release>19</release>
 					<compilerArgs>--enable-preview</compilerArgs>
@@ -172,7 +172,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.2.2</version>
 				<configuration>
 					<archive>
 						<manifestEntries>
@@ -184,7 +184,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.2.1</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -197,10 +197,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version>
-				<configuration>
-					<argLine>--enable-preview --add-opens org.sejda.io/org.sejda.io=ALL-UNNAMED</argLine>
-				</configuration>
+				<version>3.0.0-M7</version>
 			</plugin>
 		</plugins>
 	</build>
@@ -208,41 +205,35 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.36</version>
+			<version>2.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.sejda</groupId>
 			<artifactId>sejda-commons</artifactId>
-			<version>1.1.7</version>
+			<version>2.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.11</version>
+			<version>1.4.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>1.2.11</version>
+			<version>1.4.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>4.6.1</version>
+			<version>4.8.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.8.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-library</artifactId>
-			<version>2.2</version>
+			<version>5.9.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

@@ -15,7 +15,7 @@
  */
 package org.sejda.io;
 
-import static java.util.Objects.requireNonNull;
+import org.sejda.commons.util.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,13 +24,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.sejda.commons.util.IOUtils;
+import static java.util.Objects.requireNonNull;
 
 /**
- * This class consists of solely static methods to create the most appropriate {@link SeekableSource} based on the given input or to bridge {@link
- * SeekableSource}s to the more traditional {@link InputStream} or other standard I/O classes.
+ * This class consists of solely static methods to create the most appropriate {@link SeekableSource} based on the given input or to bridge {@link SeekableSource}s to the more
+ * traditional {@link InputStream} or other standard I/O classes.
  *
  * @author Andrea Vacondio
+ *
  */
 public final class SeekableSources {
 
@@ -58,36 +59,38 @@ public final class SeekableSources {
     }
 
     /**
-     * Factory method to create a {@link SeekableSource} from a {@link File}. An attempt is made to return the best {@link SeekableSource} implementation based
-     * on the size of the file and bitness of the JVM.
+     * Factory method to create a {@link SeekableSource} from a {@link File}. An attempt is made to return the best {@link SeekableSource} implementation based on the size of the
+     * file and bitness of the JVM.
      *
+     * @param file
      * @return a {@link SeekableSource} from the given file.
      * @throws IOException
      */
     public static SeekableSource seekableSourceFrom(File file) throws IOException {
         requireNonNull(file);
-        if (!"32".equals(System.getProperty("sun.arch.data.model"))
-                && !Boolean.getBoolean(DISABLE_MEMORY_MAPPED_PROPERTY)
-                && file.length() > Long.getLong(MAPPED_SIZE_THRESHOLD_PROPERTY, MB_16)) {
-            return new BufferedSeekableSource(new MemoryMappedSeekableSource(file));
-        }
-        return new BufferedSeekableSource(new FileChannelSeekableSource(file));
+        return seekableSourceFrom(file.toPath());
     }
 
     /**
-     * Factory method to create a {@link SeekableSource} from a {@link Path}. An attempt is made to return the best {@link SeekableSource} implementation based
-     * on the size of the file and bitness of the JVM.
+     * Factory method to create a {@link SeekableSource} from a {@link Path}. An attempt is made to return the best {@link SeekableSource} implementation based on the size of the
+     * file and bitness of the JVM.
      *
-     * @return a {@link SeekableSource} from the given path.
+     * @param path
+     * @return a {@link SeekableSource} from the given file.
      * @throws IOException
      */
     public static SeekableSource seekableSourceFrom(Path path) throws IOException {
         requireNonNull(path);
-        return seekableSourceFrom(path.toFile());
+        if (!"32".equals(System.getProperty("sun.arch.data.model")) && !Boolean.getBoolean(
+                DISABLE_MEMORY_MAPPED_PROPERTY) && Files.size(path) > Long.getLong(MAPPED_SIZE_THRESHOLD_PROPERTY,
+                MB_16)) {
+            return new BufferedSeekableSource(new MemoryMappedSeekableSource(path));
+        }
+        return new BufferedSeekableSource(new FileChannelSeekableSource(path));
     }
 
     /**
-     * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is read an stored in a byte array with a max size of 2GB.
+     * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is read and stored in a byte array with a max size of 2GB.
      *
      * @param stream
      * @return a {@link SeekableSource} from the given stream.
@@ -130,19 +133,28 @@ public final class SeekableSources {
      */
     public static SeekableSource onTempFileSeekableSourceFrom(InputStream stream, String filenameHint) throws IOException {
         requireNonNull(stream);
-        File tempDir = Files.createTempDirectory("SejdaIODir").toFile();
-        File temp = new File(tempDir, filenameHint);
-        if (temp.exists()) {
-            throw new RuntimeException("Temp file collision: " + temp.getAbsolutePath());
+        Path temp = Files.createTempDirectory("SejdaIODir").resolve(filenameHint);
+        if (Files.exists(temp)) {
+            throw new RuntimeException("Temp file collision: " + temp.toAbsolutePath());
         }
 
-        Files.copy(stream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(stream, temp, StandardCopyOption.REPLACE_EXISTING);
         return new BufferedSeekableSource(new FileChannelSeekableSource(temp) {
             @Override
             public void close() throws IOException {
                 super.close();
-                Files.deleteIfExists(temp.toPath());
+                Files.deleteIfExists(temp);
             }
         });
+    }
+
+    /**
+     * Factory method to create an {@link OffsettableSeekableSource} from a {@link SeekableSource}
+     * @param source
+     * @return
+     */
+    public static OffsettableSeekableSource asOffsettable(SeekableSource source) {
+        requireNonNull(source);
+        return new OffsettableSeekableSourceImpl(source);
     }
 }

@@ -15,27 +15,28 @@
  */
 package org.sejda.io;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.function.Supplier;
+
 import static org.sejda.commons.util.RequireUtils.requireArg;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 import static org.sejda.commons.util.RequireUtils.requireState;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
 /**
  * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed. The view
  * works on a thread local copy of the parent source so the parent position is not modified when a read method is called on the view.
- * 
+ *
  * @author Andrea Vacondio
  */
 class SeekableSourceView extends BaseSeekableSource {
     private final long startingPosition;
     private final long length;
     private long currentPosition;
-    private final SeekableSourceSupplier<? extends SeekableSource> supplier;
+    private final Supplier<? extends SeekableSource> supplier;
 
-    public SeekableSourceView(SeekableSourceSupplier<? extends SeekableSource> supplier, String id,
-            long startingPosition, long length) throws IOException {
+    public SeekableSourceView(Supplier<? extends SeekableSource> supplier, String id, long startingPosition,
+            long length) {
         super(id);
         requireArg(startingPosition >= 0, "Starting position cannot be negative");
         requireArg(length > 0, "View length must be positive");

@@ -15,7 +15,7 @@
  */
 package org.sejda.io;
 
-import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
+import org.sejda.commons.util.IOUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -25,12 +25,12 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 
-import org.sejda.commons.util.IOUtils;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
  * Component providing methods to write to a {@link CountingWritableByteChannel}. This implementation is buffered and bytes are flushed to the {@link CountingWritableByteChannel}
  * only when the buffer is full. The buffer size is configurable using the OUTPUT_BUFFER_SIZE_PROPERTY property.
- * 
+ *
  * @author Andrea Vacondio
  */
 public class BufferedCountingChannelWriter implements Closeable {
@@ -43,7 +43,7 @@ public class BufferedCountingChannelWriter implements Closeable {
     private boolean onNewLine = false;
 
     public BufferedCountingChannelWriter(CountingWritableByteChannel channel) {
-        requireNotNullArg(channel, "Cannot write to a null channell");
+        requireNotNullArg(channel, "Cannot write to a null channel");
         this.channel = channel;
     }
 

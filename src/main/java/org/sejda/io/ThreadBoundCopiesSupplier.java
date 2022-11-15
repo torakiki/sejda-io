@@ -15,50 +15,39 @@
  */
 package org.sejda.io;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.sejda.commons.util.IOUtils;
 
+import java.io.Closeable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
+
+import static java.util.Objects.requireNonNull;
+
 /**
- * Component suppling per-thread copies of a {@link SeekableSource} using the provided supplier. When closed, all the generated copies are closed as well.
- * 
+ * Component supplying per-thread copies of a {@link SeekableSource} using the provided supplier. When closed, all the generated copies are closed as well.
+ *
  * @author Andrea Vacondio
  */
-public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable, SeekableSourceSupplier<T> {
+public class ThreadBoundCopiesSupplier<T extends SeekableSource> implements Closeable, Supplier<T> {
 
     private final ConcurrentMap<Long, T> copies = new ConcurrentHashMap<>();
 
-    private final SeekableSourceSupplier<T> supplier;
+    private final Supplier<T> supplier;
 
-    public ThreadBoundCopiesSupplier(SeekableSourceSupplier<T> supplier) {
-        requireNonNull(supplier);
-        this.supplier = supplier;
+    public ThreadBoundCopiesSupplier(Supplier<T> supplier) {
+        this.supplier = requireNonNull(supplier);
     }
 
     @Override
-    public T get() throws IOException {
-        long id = Thread.currentThread().getId();
-        T copy = copies.get(id);
-        if (isNull(copy)) {
-            T newCopy = supplier.get();
-            copy = copies.putIfAbsent(id, newCopy);
-            if (isNull(copy)) {
-                copy = newCopy;
-            } else {
-                IOUtils.closeQuietly(newCopy);
-            }
-        }
-        return copy;
+    public T get() {
+        return copies.computeIfAbsent(Thread.currentThread().getId(), k -> supplier.get());
+
     }
 
     @Override
     public void close() {
         copies.values().forEach(IOUtils::closeQuietly);
+        copies.clear();
     }
 }

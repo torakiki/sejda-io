@@ -15,12 +15,12 @@
  */
 package org.sejda.io;
 
-import static java.util.Optional.ofNullable;
-import static org.sejda.commons.util.RequireUtils.requireArg;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
+
+import static java.util.Optional.ofNullable;
+import static org.sejda.commons.util.RequireUtils.requireArg;
 
 /**
  * A byte array based {@link SeekableSource} with a max size of 2GB.
@@ -32,7 +32,8 @@ public class ByteArraySeekableSource extends BaseSeekableSource {
     private long position;
 
     public ByteArraySeekableSource(byte[] bytes) {
-        super(ofNullable(bytes).map(UUID::nameUUIDFromBytes).map(UUID::toString).orElseThrow(() -> new IllegalArgumentException("Input byte array cannot be null")));
+        super(ofNullable(bytes).map(UUID::nameUUIDFromBytes).map(UUID::toString)
+                .orElseThrow(() -> new IllegalArgumentException("Input byte array cannot be null")));
         this.bytes = bytes;
     }
 

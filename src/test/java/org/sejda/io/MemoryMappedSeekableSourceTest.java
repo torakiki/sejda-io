@@ -15,10 +15,9 @@
  */
 package org.sejda.io;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,9 +26,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
     private MemoryMappedSeekableSource victim;
@@ -39,7 +39,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
     public void setUp() throws Exception {
         tempFile = Files.createTempFile("SejdaIO", null);
         Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                   StandardCopyOption.REPLACE_EXISTING);
+                StandardCopyOption.REPLACE_EXISTING);
         victim = new MemoryMappedSeekableSource(tempFile.toFile());
     }
 
@@ -50,20 +50,25 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
     }
 
     @Test
-    public void failingConstructor() {
+    public void nullFile() {
         assertThrows(IllegalArgumentException.class, () -> {
             new MemoryMappedSeekableSource((File) null);
         }, "Input file cannot be null");
+    }
+
+    @Test
+    public void nullPath() {
         assertThrows(IllegalArgumentException.class, () -> {
             new MemoryMappedSeekableSource((Path) null);
         }, "Input file cannot be null");
+
     }
 
     @Test
     public void read() throws IOException {
         assertEquals(0, victim.position());
-        assertNotNull(victim.read());
-        assertNotNull(victim.read());
+        assertNotEquals(-1, victim.read());
+        assertNotEquals(-1, victim.read());
         assertEquals(2, victim.position());
         victim.position(victim.size());
         assertEquals(-1, victim.read());
@@ -75,12 +80,12 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
         Path tempFile = Files.createTempFile("SejdaIO", null);
         try {
             Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                       StandardCopyOption.REPLACE_EXISTING);
-            victim = new MemoryMappedSeekableSource(tempFile.toFile());
+                    StandardCopyOption.REPLACE_EXISTING);
+            victim = new MemoryMappedSeekableSource(tempFile);
             victim.position(49);
-            assertNotNull(victim.read());
-            assertNotNull(victim.read());
-            assertNotNull(victim.read());
+            assertNotEquals(-1, victim.read());
+            assertNotEquals(-1, victim.read());
+            assertNotEquals(-1, victim.read());
             assertEquals(52, victim.position());
         } finally {
             Files.deleteIfExists(tempFile);
@@ -107,7 +112,7 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
         Path tempFile = Files.createTempFile("SejdaIO", null);
         try {
             Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                       StandardCopyOption.REPLACE_EXISTING);
+                    StandardCopyOption.REPLACE_EXISTING);
             victim = new MemoryMappedSeekableSource(tempFile.toFile());
             ByteBuffer dst = ByteBuffer.allocate(70);
             victim.read(dst);
