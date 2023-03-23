@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.foreign.MemorySession;
+import java.lang.foreign.Arena;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
@@ -47,7 +47,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
 
     private final long pageSize = Long.getLong(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, MB_256);
     private final List<ByteBuffer> pages = new ArrayList<>();
-    private final MemorySession session;
+    private final Arena arena;
     private final long size;
     private final ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
             () -> new MemoryMappedSeekableSource(this));
@@ -59,13 +59,14 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
             this.size = channel.size();
             int zeroBasedPagesNumber = (int) (channel.size() / pageSize);
-            session = MemorySession.openShared();
+            arena = Arena.openShared();
             for (int i = 0; i <= zeroBasedPagesNumber; i++) {
                 if (i == zeroBasedPagesNumber) {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, channel.size() - (i * pageSize), session)
-                            .asByteBuffer());
+                    pages.add(i,
+                            channel.map(MapMode.READ_ONLY, i * pageSize, channel.size() - (i * pageSize), arena.scope())
+                                    .asByteBuffer());
                 } else {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize, session).asByteBuffer());
+                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize, arena.scope()).asByteBuffer());
                 }
             }
             LOG.debug("Created MemoryMappedSeekableSource with " + pages.size() + " pages");
@@ -83,7 +84,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
         for (ByteBuffer page : parent.pages) {
             this.pages.add(page.duplicate());
         }
-        this.session = null;
+        this.arena = null;
     }
 
 
@@ -157,7 +158,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     public void close() throws IOException {
         super.close();
         IOUtils.close(localCopiesSupplier);
-        ofNullable(session).filter(MemorySession::isAlive).ifPresent(MemorySession::close);
+        ofNullable(arena).filter(a -> a.scope().isAlive()).ifPresent(Arena::close);
         this.pages.clear();
     }
 
