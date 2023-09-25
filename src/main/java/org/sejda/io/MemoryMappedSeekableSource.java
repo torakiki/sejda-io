@@ -59,14 +59,13 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
             this.size = channel.size();
             int zeroBasedPagesNumber = (int) (channel.size() / pageSize);
-            arena = Arena.openShared();
+            arena = Arena.ofShared();
             for (int i = 0; i <= zeroBasedPagesNumber; i++) {
                 if (i == zeroBasedPagesNumber) {
-                    pages.add(i,
-                            channel.map(MapMode.READ_ONLY, i * pageSize, channel.size() - (i * pageSize), arena.scope())
+                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, channel.size() - (i * pageSize), arena)
                                     .asByteBuffer());
                 } else {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize, arena.scope()).asByteBuffer());
+                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize, arena).asByteBuffer());
                 }
             }
             LOG.debug("Created MemoryMappedSeekableSource with " + pages.size() + " pages");

@@ -89,7 +89,7 @@
 						<configuration>
 							<toolchains>
 								<jdk>
-									<version>20</version>
+									<version>21</version>
 								</jdk>
 							</toolchains>
 						</configuration>
@@ -104,7 +104,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.5.0</version>
+						<version>3.6.0</version>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>
@@ -114,7 +114,7 @@
 							</execution>
 						</executions>
 						<configuration>
-							<release>20</release>
+							<release>21</release>
 							<additionalOptions>
 								<additionalOption>-Xdoclint:none</additionalOption>
 								<additionalOption>--enable-preview</additionalOption>
@@ -124,7 +124,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-release-plugin</artifactId>
-						<version>3.0.0</version>
+						<version>3.0.1</version>
 						<configuration>
 							<tagNameFormat>v@{project.version}</tagNameFormat>
 							<preparationGoals>clean install</preparationGoals>
@@ -133,7 +133,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.0.1</version>
+						<version>3.1.0</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -161,13 +161,22 @@
 	</profiles>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.3.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.6.0</version>
 				<configuration>
-					<release>20</release>
+					<release>21</release>
 					<additionalOptions>
 						<additionalOption>--enable-preview</additionalOption>
 					</additionalOptions>
@@ -178,11 +187,17 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.11.0</version>
 				<configuration>
-					<release>20</release>
+					<release>21</release>
 					<!-- remove this once Foreign Function & Memory API is out of preview-->
-					<compilerArgs>--enable-preview</compilerArgs>
+					<enablePreview>true</enablePreview>
 				</configuration>
-
+				<dependencies>
+					<dependency>
+						<groupId>org.ow2.asm</groupId>
+						<artifactId>asm</artifactId>
+						<version>9.5</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -199,7 +214,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.1</version>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -212,7 +227,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.2</version>
 				<configuration>
 					<!-- remove this once Foreign Function & Memory API is out of preview-->
 					<argLine>--enable-preview</argLine>
@@ -224,7 +239,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>2.0.7</version>
+			<version>2.0.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.sejda</groupId>
@@ -234,25 +249,25 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.4.6</version>
+			<version>1.4.11</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>1.4.6</version>
+			<version>1.4.11</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.2.0</version>
+			<version>5.5.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.9.2</version>
+			<version>5.10.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
