@@ -44,7 +44,7 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource {
         tempFile = Files.createTempFile("SejdaIO", null);
         Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
                 StandardCopyOption.REPLACE_EXISTING);
-        victim = new FileChannelSeekableSource(tempFile.toFile());
+        victim = new FileChannelSeekableSource(tempFile);
     }
 
     @AfterEach
@@ -86,6 +86,16 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource {
         victim.read(empty);
         empty.flip();
         assertFalse(empty.hasRemaining());
+    }
+
+    @Test
+    public void viewsKeepSeparatePositions() throws IOException {
+        var view1 = victim.view(5, 25);
+        view1.position(20);
+        var view2 = victim.view(10, 20);
+        view2.position(15);
+        assertEquals(20, view1.position());
+        assertEquals(15, view2.position());
     }
 
     @Test
