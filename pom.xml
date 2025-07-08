@@ -144,7 +144,7 @@
 						<version>0.8.0</version>
 						<extensions>true</extensions>
 						<configuration>
-							<publishingServerId>pdfsam-central</publishingServerId>
+							<publishingServerId>central</publishingServerId>
 							<autoPublish>true</autoPublish>
 						</configuration>
 					</plugin>
