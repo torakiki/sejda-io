@@ -15,6 +15,13 @@
  */
 package org.sejda.io;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,13 +29,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 /**
  * @author Andrea Vacondio
@@ -48,9 +48,8 @@ public class SeekableSourceInputStreamTest {
 
     @Test
     public void nullSource() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new SeekableSourceInputStream(null);
-        }, "Cannot decorate a null instance");
+        assertThrows(IllegalArgumentException.class, () -> new SeekableSourceInputStream(null),
+                "Cannot decorate a null instance");
     }
 
     @Test
@@ -62,9 +61,7 @@ public class SeekableSourceInputStreamTest {
     @Test
     public void readClosed() {
         when(source.isOpen()).thenReturn(false);
-        assertThrows(IllegalStateException.class, () -> {
-            victim.read();
-        });
+        assertThrows(IllegalStateException.class, () -> victim.read());
     }
 
     @Test
@@ -84,9 +81,7 @@ public class SeekableSourceInputStreamTest {
     @Test
     public void readByteArrayClosed() {
         when(source.isOpen()).thenReturn(false);
-        assertThrows(IllegalStateException.class, () -> {
-            victim.read(new byte[10]);
-        });
+        assertThrows(IllegalStateException.class, () -> victim.read(new byte[10]));
     }
 
     @Test
@@ -107,9 +102,7 @@ public class SeekableSourceInputStreamTest {
     @Test
     public void readByteArrayWithPosClosed() {
         when(source.isOpen()).thenReturn(false);
-        assertThrows(IllegalStateException.class, () -> {
-            victim.read(new byte[10], 5, 2);
-        });
+        assertThrows(IllegalStateException.class, () -> victim.read(new byte[10], 5, 2));
     }
 
     @Test
@@ -156,8 +149,6 @@ public class SeekableSourceInputStreamTest {
     @Test
     public void skipClosed() {
         when(source.isOpen()).thenReturn(false);
-        assertThrows(IllegalStateException.class, () -> {
-            victim.skip(5);
-        });
+        assertThrows(IllegalStateException.class, () -> victim.skip(5));
     }
 }

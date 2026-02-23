@@ -32,7 +32,6 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * @return the current source position as a positive long
-     * @throws IOException
      */
     long position() throws IOException;
 
@@ -43,7 +42,6 @@ public interface SeekableSource extends ReadableByteChannel {
      * @param position
      *            a non-negative long for the new position
      * @return this source
-     * @throws IOException
      */
     SeekableSource position(long position) throws IOException;
 
@@ -56,13 +54,10 @@ public interface SeekableSource extends ReadableByteChannel {
      * Reads a byte of data from this source. The byte is returned as an integer in the range 0 to 255 ( {@code 0x00-0xff} ).
      *
      * @return the next byte of data, or {@code -1} if there is no more data.
-     * @throws IOException
      */
     int read() throws IOException;
 
     /**
-     * @param startingPosition
-     * @param length
      * @return a readable view of a portion of this {@link SeekableSource}. Reading from the view doesn't affect the {@link SeekableSource} position. Closing the
      *         {@link SeekableSource} makes all the views unreadable but closing the view has no effect on the {@link SeekableSource}. A view may or may not work on a thread bound
      *         copy of the {@link SeekableSource} so as a general rule it should not be created and handed to other threads.
@@ -77,7 +72,6 @@ public interface SeekableSource extends ReadableByteChannel {
      * @param offset
      *            the number of bytes to skip back.
      * @return this source
-     * @throws IOException
      */
     default SeekableSource back(long offset) throws IOException {
         long newPosition = position() - offset;
@@ -93,7 +87,6 @@ public interface SeekableSource extends ReadableByteChannel {
      * Skips backward moving back the source position of one byte
      *
      * @return this source
-     * @throws IOException
      * @see SeekableSource#back(long)
      */
     default SeekableSource back() throws IOException {
@@ -106,7 +99,6 @@ public interface SeekableSource extends ReadableByteChannel {
      * @param offset
      *            the number of bytes to skip .
      * @return this source
-     * @throws IOException
      */
     default SeekableSource forward(long offset) throws IOException {
         return back(-offset);
@@ -116,7 +108,6 @@ public interface SeekableSource extends ReadableByteChannel {
      * Reads the next byte and sets the position back by one.
      *
      * @return the next byte or {@code -1} if there is no more data.
-     * @throws IOException
      * @see #read()
      */
     default int peek() throws IOException {
@@ -131,7 +122,6 @@ public interface SeekableSource extends ReadableByteChannel {
      * Reads the previous byte and sets the position back where it was.
      *
      * @return the previous byte or {@code -1} if we are at the beginning of the source.
-     * @throws IOException
      * @see #read()
      */
     default int peekBack() throws IOException {
@@ -165,7 +155,6 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * @throws IllegalStateException if the source is closed
-     * @throws IOException
      */
     void requireOpen() throws IOException;
 

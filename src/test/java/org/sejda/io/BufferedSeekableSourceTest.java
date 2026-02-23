@@ -15,16 +15,16 @@
  */
 package org.sejda.io;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Andrea Vacondio
@@ -41,9 +41,8 @@ public class BufferedSeekableSourceTest extends BaseTestSeekableSource {
 
     @Test
     public void failingConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new BufferedSeekableSource(null);
-        }, "Input decorated SeekableSource cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new BufferedSeekableSource(null),
+                "Input decorated SeekableSource cannot be null");
     }
 
     @Test

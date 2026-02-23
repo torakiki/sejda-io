@@ -27,7 +27,6 @@ public interface OffsettableSeekableSource extends SeekableSource {
     /**
      * Sets the offset for this source
      *
-     * @param offset
      * @throws IllegalArgumentException if the offset is negative or if it would lead to a negative size
      */
     void offset(long offset) throws IOException;

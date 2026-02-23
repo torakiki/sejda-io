@@ -51,16 +51,14 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
 
     @Test
     public void nullFile() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new MemoryMappedSeekableSource((File) null);
-        }, "Input file cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new MemoryMappedSeekableSource((File) null),
+                "Input file cannot be null");
     }
 
     @Test
     public void nullPath() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new MemoryMappedSeekableSource((Path) null);
-        }, "Input file cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new MemoryMappedSeekableSource((Path) null),
+                "Input file cannot be null");
 
     }
 

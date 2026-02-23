@@ -73,7 +73,6 @@ public class CountingWritableByteChannel implements WritableByteChannel {
     /**
      * Static factory method to create a {@link CountingWritableByteChannel} from an existing {@link WritableByteChannel}.
      * 
-     * @param channel
      * @return the newly created {@link CountingWritableByteChannel}
      */
     public static CountingWritableByteChannel from(WritableByteChannel channel) {
@@ -83,7 +82,6 @@ public class CountingWritableByteChannel implements WritableByteChannel {
     /**
      * Static factory method to create a {@link CountingWritableByteChannel} from an existing {@link OutputStream}.
      * 
-     * @param stream
      * @return the newly created {@link CountingWritableByteChannel}
      */
     public static CountingWritableByteChannel from(OutputStream stream) {
@@ -93,9 +91,7 @@ public class CountingWritableByteChannel implements WritableByteChannel {
     /**
      * Static factory method to create a {@link CountingWritableByteChannel} from an existing {@link File}. If the file already exists its content is purged.
      * 
-     * @param file
      * @return the newly created {@link CountingWritableByteChannel}
-     * @throws IOException
      * @see RandomAccessFile#RandomAccessFile(File, String)
      */
     public static CountingWritableByteChannel from(File file) throws IOException {
@@ -107,9 +103,7 @@ public class CountingWritableByteChannel implements WritableByteChannel {
     /**
      * Static factory method to create a {@link CountingWritableByteChannel} from an existing file path. If the file already exists its content is purged.
      * 
-     * @param file
      * @return the newly created {@link CountingWritableByteChannel}
-     * @throws IOException
      * @see RandomAccessFile#RandomAccessFile(String, String)
      */
     public static CountingWritableByteChannel from(String file) throws IOException {

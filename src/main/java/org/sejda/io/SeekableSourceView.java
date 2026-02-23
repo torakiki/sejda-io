@@ -121,8 +121,6 @@ class SeekableSourceView extends BaseSeekableSource {
 
     /**
      * Cannot create a view of a view. This method throws {@link RuntimeException}.
-     * 
-     * @throws RuntimeException
      */
     @Override
     public SeekableSource view(long startingPosition, long length) {

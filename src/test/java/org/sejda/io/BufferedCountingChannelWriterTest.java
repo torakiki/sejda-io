@@ -15,15 +15,9 @@
  */
 package org.sejda.io;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,9 +25,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Andrea Vacondio
@@ -59,9 +59,8 @@ public class BufferedCountingChannelWriterTest {
 
     @Test
     public void nullConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new BufferedCountingChannelWriter(null);
-        }, "Cannot write to a null channell");
+        assertThrows(IllegalArgumentException.class, () -> new BufferedCountingChannelWriter(null),
+                "Cannot write to a null channell");
     }
 
     @Test
@@ -95,7 +94,7 @@ public class BufferedCountingChannelWriterTest {
     public void writeEOL() throws IOException {
         victim.writeEOL();
         victim.close();
-        assertTrue(Arrays.equals(new byte[] { '\n' }, out.toByteArray()));
+        assertArrayEquals(new byte[] { '\n' }, out.toByteArray());
     }
 
     @Test
@@ -106,7 +105,7 @@ public class BufferedCountingChannelWriterTest {
         victim.writeEOL();
         victim.writeEOL();
         victim.close();
-        assertTrue(Arrays.equals(new byte[] { '\n', -1, '\n' }, out.toByteArray()));
+        assertArrayEquals(new byte[] { '\n', -1, '\n' }, out.toByteArray());
     }
 
     @Test
@@ -120,7 +119,7 @@ public class BufferedCountingChannelWriterTest {
     public void writeString() throws IOException {
         victim.write("ChuckNorris");
         victim.close();
-        assertTrue(Arrays.equals("ChuckNorris".getBytes(StandardCharsets.ISO_8859_1), out.toByteArray()));
+        assertArrayEquals("ChuckNorris".getBytes(StandardCharsets.ISO_8859_1), out.toByteArray());
     }
 
     @Test
@@ -131,7 +130,7 @@ public class BufferedCountingChannelWriterTest {
         victim.write(bytes);
         assertEquals(5, victim.offset());
         victim.close();
-        assertTrue(Arrays.equals(bytes, out.toByteArray()));
+        assertArrayEquals(bytes, out.toByteArray());
     }
 
     @Test
@@ -144,6 +143,6 @@ public class BufferedCountingChannelWriterTest {
         victim.close();
         byte[] expected = Arrays.copyOf(bytes, bytes.length + streamBytes.length);
         System.arraycopy(streamBytes, 0, expected, bytes.length, streamBytes.length);
-        assertTrue(Arrays.equals(expected, out.toByteArray()));
+        assertArrayEquals(expected, out.toByteArray());
     }
 }

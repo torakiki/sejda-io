@@ -15,14 +15,14 @@
  */
 package org.sejda.io;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Andrea Vacondio
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 public class DevNullWritableByteChannelTest {
 
     private DevNullWritableByteChannel victim;
-    private ByteBuffer src = ByteBuffer.wrap(new byte[] { '1', '1', '2', '1', '1' });
+    private final ByteBuffer src = ByteBuffer.wrap(new byte[] { '1', '1', '2', '1', '1' });
 
     @BeforeEach
     public void setUp() {

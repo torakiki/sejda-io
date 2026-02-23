@@ -64,9 +64,6 @@ public class BufferedCountingChannelWriter implements Closeable {
 
     /**
      * Writes the given string in {@link StandardCharsets#ISO_8859_1}
-     * 
-     * @param value
-     * @throws IOException
      */
     public void write(String value) throws IOException {
         write(value.getBytes(StandardCharsets.ISO_8859_1));
@@ -74,9 +71,6 @@ public class BufferedCountingChannelWriter implements Closeable {
 
     /**
      * Writes the given bytes to the destination
-     * 
-     * @param bytes
-     * @throws IOException
      */
     public void write(byte[] bytes) throws IOException {
         for (byte aByte : bytes) {
@@ -86,9 +80,6 @@ public class BufferedCountingChannelWriter implements Closeable {
 
     /**
      * Writes the single byte to the destination
-     * 
-     * @param myByte
-     * @throws IOException
      */
     public void write(byte myByte) throws IOException {
         onNewLine = false;
@@ -100,9 +91,6 @@ public class BufferedCountingChannelWriter implements Closeable {
 
     /**
      * Writes everything that is read from the {@link InputStream} to the destination
-     * 
-     * @param stream
-     * @throws IOException
      */
     public void write(InputStream stream) throws IOException {
         onNewLine = false;
@@ -123,8 +111,6 @@ public class BufferedCountingChannelWriter implements Closeable {
 
     /**
      * Flush the buffer
-     * 
-     * @throws IOException
      */
     public void flush() throws IOException {
         buffer.flip();

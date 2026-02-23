@@ -32,6 +32,7 @@ import java.util.List;
 
 import static java.util.Optional.ofNullable;
 import static org.sejda.commons.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
  * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination
@@ -54,8 +55,8 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     private long position;
 
     public MemoryMappedSeekableSource(Path path) throws IOException {
-        super(ofNullable(path).map(Path::toAbsolutePath).map(Path::toString)
-                .orElseThrow(() -> new IllegalArgumentException("Input path cannot be null")));
+        requireNotNullArg(path, "Input path cannot be null");
+        super(path.toAbsolutePath().toString());
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
             this.size = channel.size();
             int zeroBasedPagesNumber = (int) (channel.size() / pageSize);
@@ -68,13 +69,13 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
                     pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize, arena).asByteBuffer());
                 }
             }
-            LOG.debug("Created MemoryMappedSeekableSource with " + pages.size() + " pages");
+            LOG.debug("Created MemoryMappedSeekableSource with {} pages", pages.size());
         }
     }
 
     public MemoryMappedSeekableSource(File file) throws IOException {
-        this(ofNullable(file).map(File::toPath)
-                .orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
+        requireNotNullArg(file, "Input file cannot be null");
+        this(file.toPath());
     }
 
     private MemoryMappedSeekableSource(MemoryMappedSeekableSource parent) {
