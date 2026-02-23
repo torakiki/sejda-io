@@ -27,6 +27,7 @@ import java.nio.file.StandardOpenOption;
 
 import static java.util.Optional.ofNullable;
 import static org.sejda.commons.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
  * A {@link SeekableSource} implementation based on {@link FileChannel}.
@@ -41,8 +42,8 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
             () -> new FileChannelSeekableSource(path));
 
     public FileChannelSeekableSource(Path path) {
-        super(ofNullable(path).map(Path::toAbsolutePath).map(Path::toString)
-                .orElseThrow(() -> new IllegalArgumentException("Input path cannot be null")));
+        requireNotNullArg(path, "Input path cannot be null");
+        super(path.toAbsolutePath().toString());
         try {
             this.channel = FileChannel.open(path, StandardOpenOption.READ);
             this.size = channel.size();
