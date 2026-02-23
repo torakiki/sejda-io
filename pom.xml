@@ -44,7 +44,7 @@
 		<developer>
 			<id>torakiki</id>
 			<name>Andrea Vacondio</name>
-			<email>andrea.vacondio@gmail.com</email>
+			<email>andrea@soberlemur.com</email>
 		</developer>
 		<developer>
 			<id>ediweissmann</id>
@@ -78,7 +78,7 @@
 						<configuration>
 							<toolchains>
 								<jdk>
-									<version>21</version>
+									<version>25</version>
 								</jdk>
 							</toolchains>
 						</configuration>
@@ -106,7 +106,6 @@
 							<release>21</release>
 							<additionalOptions>
 								<additionalOption>-Xdoclint:none</additionalOption>
-								<additionalOption>--enable-preview</additionalOption>
 							</additionalOptions>
 						</configuration>
 					</plugin>
@@ -164,10 +163,7 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.12.0</version>
 				<configuration>
-					<release>21</release>
-					<additionalOptions>
-						<additionalOption>--enable-preview</additionalOption>
-					</additionalOptions>
+					<release>25</release>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -175,9 +171,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.15.0</version>
 				<configuration>
-					<release>21</release>
-					<!-- remove this once Foreign Function & Memory API is out of preview-->
-					<enablePreview>true</enablePreview>
+					<release>25</release>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -209,10 +203,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.5.4</version>
-				<configuration>
-					<!-- remove this once Foreign Function & Memory API is out of preview-->
-					<argLine>--enable-preview</argLine>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -225,30 +215,30 @@
 		<dependency>
 			<groupId>org.sejda</groupId>
 			<artifactId>sejda-commons</artifactId>
-			<version>3.0.0</version>
+			<version>3.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.5.18</version>
+			<version>1.5.25</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>1.5.18</version>
+			<version>1.5.25</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>5.18.0</version>
+			<version>5.21.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.13.3</version>
+			<version>5.14.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
