@@ -100,7 +100,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.11.2</version>
+						<version>3.12.0</version>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>
@@ -120,7 +120,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-release-plugin</artifactId>
-						<version>3.1.1</version>
+						<version>3.3.1</version>
 						<configuration>
 							<tagNameFormat>v@{project.version}</tagNameFormat>
 							<preparationGoals>clean install</preparationGoals>
@@ -129,7 +129,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.2.7</version>
+						<version>3.2.8</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -143,7 +143,7 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>0.8.0</version>
+						<version>0.10.0</version>
 						<extensions>true</extensions>
 						<configuration>
 							<publishingServerId>central</publishingServerId>
@@ -161,7 +161,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.4.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -169,7 +169,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.11.2</version>
+				<version>3.12.0</version>
 				<configuration>
 					<release>21</release>
 					<additionalOptions>
@@ -180,7 +180,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.14.0</version>
+				<version>3.15.0</version>
 				<configuration>
 					<release>21</release>
 					<!-- remove this once Foreign Function & Memory API is out of preview-->
@@ -190,7 +190,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.4.2</version>
+				<version>3.5.0</version>
 				<configuration>
 					<archive>
 						<manifestEntries>
@@ -202,7 +202,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.3.1</version>
+				<version>3.4.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -215,7 +215,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.3</version>
+				<version>3.5.4</version>
 				<configuration>
 					<!-- remove this once Foreign Function & Memory API is out of preview-->
 					<argLine>--enable-preview</argLine>
