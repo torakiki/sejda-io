@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
  */
 package org.sejda.io;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -27,16 +25,18 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CountingWritableByteChannelTest {
     private ByteArrayOutputStream out;
     private CountingWritableByteChannel victim;
     private WritableByteChannel wrapped;
-    private ByteBuffer src = ByteBuffer.wrap(new byte[] { '1', '1', '2', '1', '1' });
+    private final ByteBuffer src = ByteBuffer.wrap(new byte[] { '1', '1', '2', '1', '1' });
 
     @BeforeEach
     public void setUp() {
@@ -47,9 +47,8 @@ public class CountingWritableByteChannelTest {
 
     @Test
     public void nullConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new CountingWritableByteChannel(null);
-        }, "Cannot decorate a null instance");
+        assertThrows(IllegalArgumentException.class, () -> new CountingWritableByteChannel(null),
+                "Cannot decorate a null instance");
     }
 
     @Test
@@ -62,15 +61,13 @@ public class CountingWritableByteChannelTest {
     @Test
     public void closedWrite() throws Exception {
         victim.close();
-        assertThrows(ClosedChannelException.class, () -> {
-            victim.write(src);
-        });
+        assertThrows(ClosedChannelException.class, () -> victim.write(src));
     }
 
     @Test
     public void write() throws Exception {
         victim.write(src);
-        assertTrue(Arrays.equals(out.toByteArray(), src.array()));
+        assertArrayEquals(out.toByteArray(), src.array());
     }
 
     @Test
@@ -92,14 +89,14 @@ public class CountingWritableByteChannelTest {
     public void testFromWritableByteChannel() throws Exception {
         victim = CountingWritableByteChannel.from(Channels.newChannel(out));
         victim.write(src);
-        assertTrue(Arrays.equals(out.toByteArray(), src.array()));
+        assertArrayEquals(out.toByteArray(), src.array());
     }
 
     @Test
     public void fromOutputStream() throws Exception {
         victim = CountingWritableByteChannel.from(out);
         victim.write(src);
-        assertTrue(Arrays.equals(out.toByteArray(), src.array()));
+        assertArrayEquals(out.toByteArray(), src.array());
     }
 
     @Test
@@ -109,7 +106,7 @@ public class CountingWritableByteChannelTest {
             assertEquals(0, Files.size(tempFile));
             victim = CountingWritableByteChannel.from(tempFile.toFile());
             victim.write(src);
-            assertTrue(Arrays.equals(Files.readAllBytes(tempFile), src.array()));
+            assertArrayEquals(Files.readAllBytes(tempFile), src.array());
         } finally {
             Files.deleteIfExists(tempFile);
         }
@@ -122,7 +119,7 @@ public class CountingWritableByteChannelTest {
             assertEquals(0, Files.size(tempFile));
             victim = CountingWritableByteChannel.from(tempFile.toAbsolutePath().toString());
             victim.write(src);
-            assertTrue(Arrays.equals(Files.readAllBytes(tempFile), src.array()));
+            assertArrayEquals(Files.readAllBytes(tempFile), src.array());
         } finally {
             Files.deleteIfExists(tempFile);
         }

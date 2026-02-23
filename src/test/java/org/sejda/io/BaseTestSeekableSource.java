@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,19 @@
  */
 package org.sejda.io;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.sejda.commons.util.IOUtils;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.sejda.commons.util.IOUtils;
 
 /**
  * @author Andrea Vacondio
@@ -44,17 +44,13 @@ public abstract class BaseTestSeekableSource {
 
     @Test
     public void illegalPosition() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            victim().position(-10);
-        });
+        assertThrows(IllegalArgumentException.class, () -> victim().position(-10));
     }
 
     @Test
     public void viewClosed() throws IOException {
         victim().close();
-        assertThrows(IllegalStateException.class, () -> {
-            victim().view(0, 2);
-        });
+        assertThrows(IllegalStateException.class, () -> victim().view(0, 2));
     }
 
     @Test
@@ -73,17 +69,13 @@ public abstract class BaseTestSeekableSource {
     @Test
     public void readClosed() throws IOException {
         victim().close();
-        assertThrows(IllegalStateException.class, () -> {
-            victim().read();
-        });
+        assertThrows(IllegalStateException.class, () -> victim().read());
     }
 
     @Test
     public void readByteBuffClosed() throws IOException {
         victim().close();
-        assertThrows(IllegalStateException.class, () -> {
-            victim().read(ByteBuffer.allocate(5));
-        });
+        assertThrows(IllegalStateException.class, () -> victim().read(ByteBuffer.allocate(5)));
     }
 
     @Test
@@ -95,9 +87,7 @@ public abstract class BaseTestSeekableSource {
     @Test
     public void invalidForward() throws IOException {
         assertEquals(0, victim().position());
-        assertThrows(IllegalArgumentException.class, () -> {
-            victim().forward(victim().size() + 1);
-        });
+        assertThrows(IllegalArgumentException.class, () -> victim().forward(victim().size() + 1));
     }
 
     @Test
@@ -109,9 +99,7 @@ public abstract class BaseTestSeekableSource {
     @Test
     public void invalidBack() throws IOException {
         assertEquals(0, victim().position());
-        assertThrows(IllegalArgumentException.class, () -> {
-            victim().back();
-        });
+        assertThrows(IllegalArgumentException.class, () -> victim().back());
     }
 
     @Test
@@ -150,8 +138,6 @@ public abstract class BaseTestSeekableSource {
     public void failingRequireOpen() throws IOException {
         assertTrue(victim().isOpen());
         victim().close();
-        assertThrows(IllegalStateException.class, () -> {
-            victim().requireOpen();
-        });
+        assertThrows(IllegalStateException.class, () -> victim().requireOpen());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,8 +121,6 @@ class SeekableSourceView extends BaseSeekableSource {
 
     /**
      * Cannot create a view of a view. This method throws {@link RuntimeException}.
-     * 
-     * @throws RuntimeException
      */
     @Override
     public SeekableSource view(long startingPosition, long length) {

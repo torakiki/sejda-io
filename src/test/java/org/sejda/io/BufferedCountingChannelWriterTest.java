@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,25 @@
  */
 package org.sejda.io;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 /**
  * @author Andrea Vacondio
@@ -58,9 +59,8 @@ public class BufferedCountingChannelWriterTest {
 
     @Test
     public void nullConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new BufferedCountingChannelWriter(null);
-        }, "Cannot write to a null channell");
+        assertThrows(IllegalArgumentException.class, () -> new BufferedCountingChannelWriter(null),
+                "Cannot write to a null channell");
     }
 
     @Test
@@ -94,7 +94,7 @@ public class BufferedCountingChannelWriterTest {
     public void writeEOL() throws IOException {
         victim.writeEOL();
         victim.close();
-        assertTrue(Arrays.equals(new byte[] { '\n' }, out.toByteArray()));
+        assertArrayEquals(new byte[] { '\n' }, out.toByteArray());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class BufferedCountingChannelWriterTest {
         victim.writeEOL();
         victim.writeEOL();
         victim.close();
-        assertTrue(Arrays.equals(new byte[] { '\n', -1, '\n' }, out.toByteArray()));
+        assertArrayEquals(new byte[] { '\n', -1, '\n' }, out.toByteArray());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class BufferedCountingChannelWriterTest {
     public void writeString() throws IOException {
         victim.write("ChuckNorris");
         victim.close();
-        assertTrue(Arrays.equals("ChuckNorris".getBytes("ISO-8859-1"), out.toByteArray()));
+        assertArrayEquals("ChuckNorris".getBytes(StandardCharsets.ISO_8859_1), out.toByteArray());
     }
 
     @Test
@@ -130,19 +130,19 @@ public class BufferedCountingChannelWriterTest {
         victim.write(bytes);
         assertEquals(5, victim.offset());
         victim.close();
-        assertTrue(Arrays.equals(bytes, out.toByteArray()));
+        assertArrayEquals(bytes, out.toByteArray());
     }
 
     @Test
     public void writeInputStream() throws IOException {
         byte[] bytes = new byte[] { '1', '1', '2', '1', '1' };
         victim.write(bytes);
-        byte[] streamBytes = "ChuckNorris".getBytes("ISO-8859-1");
+        byte[] streamBytes = "ChuckNorris".getBytes(StandardCharsets.ISO_8859_1);
         ByteArrayInputStream is = new ByteArrayInputStream(streamBytes);
         victim.write(is);
         victim.close();
         byte[] expected = Arrays.copyOf(bytes, bytes.length + streamBytes.length);
         System.arraycopy(streamBytes, 0, expected, bytes.length, streamBytes.length);
-        assertTrue(Arrays.equals(expected, out.toByteArray()));
+        assertArrayEquals(expected, out.toByteArray());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
  */
 package org.sejda.io;
 
-import org.sejda.io.util.IOUtils;
+import org.sejda.commons.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.foreign.Arena;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
@@ -28,15 +29,15 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 import static java.util.Optional.ofNullable;
 import static org.sejda.commons.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
- * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination algorithm allowing to
- * open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY} system property.
+ * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination
+ * algorithm allowing to open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY}
+ * system property.
  *
  * @author Andrea Vacondio
  *
@@ -47,32 +48,34 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
 
     private final long pageSize = Long.getLong(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, MB_256);
     private final List<ByteBuffer> pages = new ArrayList<>();
-    private long position;
+    private final Arena arena;
     private final long size;
     private final ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
             () -> new MemoryMappedSeekableSource(this));
-    private Consumer<? super ByteBuffer> unmapper = IOUtils::unmap;
+    private long position;
 
     public MemoryMappedSeekableSource(Path path) throws IOException {
-        super(ofNullable(path).map(Path::toAbsolutePath).map(Path::toString)
-                .orElseThrow(() -> new IllegalArgumentException("Input path cannot be null")));
+        requireNotNullArg(path, "Input path cannot be null");
+        super(path.toAbsolutePath().toString());
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
             this.size = channel.size();
             int zeroBasedPagesNumber = (int) (channel.size() / pageSize);
+            arena = Arena.ofShared();
             for (int i = 0; i <= zeroBasedPagesNumber; i++) {
                 if (i == zeroBasedPagesNumber) {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, channel.size() - (i * pageSize)));
+                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, channel.size() - (i * pageSize), arena)
+                                    .asByteBuffer());
                 } else {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize));
+                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize, arena).asByteBuffer());
                 }
             }
-            LOG.debug("Created MemoryMappedSeekableSource with " + pages.size() + " pages");
+            LOG.debug("Created MemoryMappedSeekableSource with {} pages", pages.size());
         }
     }
 
     public MemoryMappedSeekableSource(File file) throws IOException {
-        this(ofNullable(file).map(File::toPath)
-                .orElseThrow(() -> new IllegalArgumentException("Input file cannot be null")));
+        requireNotNullArg(file, "Input file cannot be null");
+        this(file.toPath());
     }
 
     private MemoryMappedSeekableSource(MemoryMappedSeekableSource parent) {
@@ -81,9 +84,9 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
         for (ByteBuffer page : parent.pages) {
             this.pages.add(page.duplicate());
         }
-        // unmap doesn't work on duplicate, see Unsafe#invokeCleaner
-        this.unmapper = null;
+        this.arena = null;
     }
+
 
     @Override
     public long position() {
@@ -154,9 +157,9 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     @Override
     public void close() throws IOException {
         super.close();
-        org.sejda.commons.util.IOUtils.close(localCopiesSupplier);
-        Optional.ofNullable(unmapper).ifPresent(pages::forEach);
-        pages.clear();
+        IOUtils.close(localCopiesSupplier);
+        ofNullable(arena).filter(a -> a.scope().isAlive()).ifPresent(Arena::close);
+        this.pages.clear();
     }
 
     @Override

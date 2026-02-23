@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -62,46 +61,34 @@ public class SeekableSourcesTest {
 
     @Test
     public void nullFileSeekableSourceFrom() {
-        assertThrows(NullPointerException.class, () -> {
-            seekableSourceFrom((File) null);
-        });
+        assertThrows(NullPointerException.class, () -> seekableSourceFrom((File) null));
     }
 
     @Test
     public void nullPathSeekableSourceFrom() {
-        assertThrows(NullPointerException.class, () -> {
-            seekableSourceFrom((Path) null);
-        });
+        assertThrows(NullPointerException.class, () -> seekableSourceFrom((Path) null));
 
     }
 
     @Test
     public void nullInMemorySeekableSourceFromBytes() {
-        assertThrows(NullPointerException.class, () -> {
-            inMemorySeekableSourceFrom((byte[]) null);
-        });
+        assertThrows(NullPointerException.class, () -> inMemorySeekableSourceFrom((byte[]) null));
 
     }
 
     @Test
     public void nullInMemorySeekableSourceFromStream() {
-        assertThrows(NullPointerException.class, () -> {
-            inMemorySeekableSourceFrom((InputStream) null);
-        });
+        assertThrows(NullPointerException.class, () -> inMemorySeekableSourceFrom((InputStream) null));
     }
 
     @Test
     public void nullOnTempFileSeekableSourceFrom() {
-        assertThrows(NullPointerException.class, () -> {
-            onTempFileSeekableSourceFrom(null);
-        });
+        assertThrows(NullPointerException.class, () -> onTempFileSeekableSourceFrom(null));
     }
 
     @Test
     public void nullOffsettableSource() {
-        assertThrows(NullPointerException.class, () -> {
-            asOffsettable(null);
-        });
+        assertThrows(NullPointerException.class, () -> asOffsettable(null));
     }
 
     @Test
@@ -127,8 +114,8 @@ public class SeekableSourcesTest {
                     StandardCopyOption.REPLACE_EXISTING);
             SeekableSource source = seekableSourceFrom(tempFile.toFile());
             assertNotNull(source);
-            assertTrue(source instanceof BufferedSeekableSource);
-            assertTrue(((BufferedSeekableSource) source).wrapped() instanceof MemoryMappedSeekableSource);
+            assertInstanceOf(BufferedSeekableSource.class, source);
+            assertInstanceOf(MemoryMappedSeekableSource.class, ((BufferedSeekableSource) source).wrapped());
         } finally {
             System.getProperties().remove(MAPPED_SIZE_THRESHOLD_PROPERTY);
         }
@@ -144,8 +131,8 @@ public class SeekableSourcesTest {
                     StandardCopyOption.REPLACE_EXISTING);
             SeekableSource source = seekableSourceFrom(tempFile.toFile());
             assertNotNull(source);
-            assertTrue(source instanceof BufferedSeekableSource);
-            assertTrue(((BufferedSeekableSource) source).wrapped() instanceof FileChannelSeekableSource);
+            assertInstanceOf(BufferedSeekableSource.class, source);
+            assertInstanceOf(FileChannelSeekableSource.class, ((BufferedSeekableSource) source).wrapped());
         } finally {
             System.getProperties().remove(MAPPED_SIZE_THRESHOLD_PROPERTY);
             System.getProperties().remove(DISABLE_MEMORY_MAPPED_PROPERTY);
@@ -162,8 +149,8 @@ public class SeekableSourcesTest {
                     StandardCopyOption.REPLACE_EXISTING);
             SeekableSource source = seekableSourceFrom(tempFile.toFile());
             assertNotNull(source);
-            assertTrue(source instanceof BufferedSeekableSource);
-            assertTrue(((BufferedSeekableSource) source).wrapped() instanceof FileChannelSeekableSource);
+            assertInstanceOf(BufferedSeekableSource.class, source);
+            assertInstanceOf(FileChannelSeekableSource.class, ((BufferedSeekableSource) source).wrapped());
         } finally {
             System.getProperties().remove(MAPPED_SIZE_THRESHOLD_PROPERTY);
             System.setProperty("sun.arch.data.model", BITNESS);
@@ -194,7 +181,7 @@ public class SeekableSourcesTest {
     public void onTempFileSeekableSourceFromWithFilenameHint() throws IOException {
         String filenameHint = "input.pdf";
         SeekableSource result = onTempFileSeekableSourceFrom(new ByteArrayInputStream(new byte[] { -1 }), filenameHint);
-        assertThat(result.id(), endsWith(filenameHint));
+        assertTrue(result.id().endsWith(filenameHint));
     }
 
     @Test

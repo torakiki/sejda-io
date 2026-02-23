@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import static java.util.Optional.ofNullable;
 import static org.sejda.commons.util.RequireUtils.requireArg;
+import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
  * A byte array based {@link SeekableSource} with a max size of 2GB.
- * 
+ *
  * @author Andrea Vacondio
  */
 public class ByteArraySeekableSource extends BaseSeekableSource {
@@ -32,8 +32,8 @@ public class ByteArraySeekableSource extends BaseSeekableSource {
     private long position;
 
     public ByteArraySeekableSource(byte[] bytes) {
-        super(ofNullable(bytes).map(UUID::nameUUIDFromBytes).map(UUID::toString)
-                .orElseThrow(() -> new IllegalArgumentException("Input byte array cannot be null")));
+        requireNotNullArg(bytes, "Input byte array cannot be null");
+        super(UUID.nameUUIDFromBytes(bytes).toString());
         this.bytes = bytes;
     }
 

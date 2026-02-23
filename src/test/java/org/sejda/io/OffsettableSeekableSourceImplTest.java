@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import static org.junit.jupiter.api.Assertions.*;
 
 /*
- * Copyright 2022 Sober Lemur S.a.s. di Vacondio Andrea and Sejda BV
+ * Copyright 2022 Sober Lemur S.r.l. and Sejda BV
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

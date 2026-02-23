@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,16 +51,14 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
 
     @Test
     public void nullFile() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new MemoryMappedSeekableSource((File) null);
-        }, "Input file cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new MemoryMappedSeekableSource((File) null),
+                "Input file cannot be null");
     }
 
     @Test
     public void nullPath() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new MemoryMappedSeekableSource((Path) null);
-        }, "Input file cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new MemoryMappedSeekableSource((Path) null),
+                "Input file cannot be null");
 
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
  */
 package org.sejda.io;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -27,9 +25,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Andrea Vacondio
@@ -54,30 +53,29 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
 
     @Test
     public void nullSourceConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new SeekableSourceView(null, "id", 50, 100);
-        }, "Input decorated SeekableSource cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new SeekableSourceView(null, "id", 50, 100),
+                "Input decorated SeekableSource cannot be null");
     }
 
     @Test
     public void negativeStartPositionConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1 }), "id", -10, 100);
-        }, "Starting position cannot be negative");
+        assertThrows(IllegalArgumentException.class,
+                () -> new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1 }), "id", -10, 100),
+                "Starting position cannot be negative");
     }
 
     @Test
     public void outOfBoundsStartPositionConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1, 2 }), "id", 3, 100);
-        }, "Starting position cannot be higher then wrapped source size");
+        assertThrows(IllegalArgumentException.class,
+                () -> new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1, 2 }), "id", 3, 100),
+                "Starting position cannot be higher then wrapped source size");
     }
 
     @Test
     public void nullNonPositiveLengthConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1 }), "id", 0, 0);
-        }, "View length must be positive");
+        assertThrows(IllegalArgumentException.class,
+                () -> new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1 }), "id", 0, 0),
+                "View length must be positive");
     }
 
     @Test
@@ -86,26 +84,22 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     }
 
     @Test
-    public void sizeTrimmed() throws IOException {
+    public void sizeTrimmed() {
         assertEquals(2,
                 new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1, 2 }), "id", 0, 100).size());
     }
 
     @Override
     @Test
-    public void view() throws IOException {
-        assertThrows(RuntimeException.class, () -> {
-            victim().view(0, 2);
-        }, "Cannot create a view of a view");
+    public void view() {
+        assertThrows(RuntimeException.class, () -> victim().view(0, 2), "Cannot create a view of a view");
     }
 
     @Override
     @Test
     public void viewClosed() throws IOException {
         victim().close();
-        assertThrows(RuntimeException.class, () -> {
-            victim().view(0, 2);
-        }, "Cannot create a view of a view");
+        assertThrows(RuntimeException.class, () -> victim().view(0, 2), "Cannot create a view of a view");
     }
 
     @Test
@@ -114,9 +108,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
         victim = new SeekableSourceView(() -> wrapped, "id", 0, 1);
         wrapped.close();
         assertTrue(victim.isOpen());
-        assertThrows(IllegalStateException.class, () -> {
-            victim.read();
-        });
+        assertThrows(IllegalStateException.class, () -> victim.read());
     }
 
     @Test
@@ -135,8 +127,8 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     @Test
     public void read() throws IOException {
         assertEquals(0, victim.position());
-        assertNotNull(victim.read());
-        assertNotNull(victim.read());
+        victim.read();
+        victim.read();
         assertEquals(2, victim.position());
         victim.position(victim.size());
         assertEquals(-1, victim.read());

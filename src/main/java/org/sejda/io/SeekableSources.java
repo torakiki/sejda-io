@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sober Lemur S.a.s. di Vacondio Andrea
+ * Copyright 2018 Sober Lemur S.r.l.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,9 +62,7 @@ public final class SeekableSources {
      * Factory method to create a {@link SeekableSource} from a {@link File}. An attempt is made to return the best {@link SeekableSource} implementation based on the size of the
      * file and bitness of the JVM.
      *
-     * @param file
      * @return a {@link SeekableSource} from the given file.
-     * @throws IOException
      */
     public static SeekableSource seekableSourceFrom(File file) throws IOException {
         requireNonNull(file);
@@ -75,9 +73,7 @@ public final class SeekableSources {
      * Factory method to create a {@link SeekableSource} from a {@link Path}. An attempt is made to return the best {@link SeekableSource} implementation based on the size of the
      * file and bitness of the JVM.
      *
-     * @param path
      * @return a {@link SeekableSource} from the given file.
-     * @throws IOException
      */
     public static SeekableSource seekableSourceFrom(Path path) throws IOException {
         requireNonNull(path);
@@ -92,9 +88,7 @@ public final class SeekableSources {
     /**
      * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is read and stored in a byte array with a max size of 2GB.
      *
-     * @param stream
      * @return a {@link SeekableSource} from the given stream.
-     * @throws IOException
      */
     public static SeekableSource inMemorySeekableSourceFrom(InputStream stream) throws IOException {
         requireNonNull(stream);
@@ -104,7 +98,6 @@ public final class SeekableSources {
     /**
      * Factory method to create a {@link SeekableSource} from a byte array.
      *
-     * @param bytes
      * @return a {@link SeekableSource} wrapping the given byte array.
      */
     public static SeekableSource inMemorySeekableSourceFrom(byte[] bytes) {
@@ -115,9 +108,7 @@ public final class SeekableSources {
     /**
      * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is copied to a temporary file.
      *
-     * @param stream
      * @return a {@link SeekableSource} from the given stream.
-     * @throws IOException
      */
     public static SeekableSource onTempFileSeekableSourceFrom(InputStream stream) throws IOException {
         return onTempFileSeekableSourceFrom(stream, "SejdaIO");
@@ -126,26 +117,24 @@ public final class SeekableSources {
     /**
      * Factory method to create a {@link SeekableSource} from a {@link InputStream}. The whole stream is copied to a temporary file.
      *
-     * @param stream
      * @param filenameHint name to use for the temp file that will be created
      * @return a {@link SeekableSource} from the given stream.
-     * @throws IOException
      */
     public static SeekableSource onTempFileSeekableSourceFrom(InputStream stream, String filenameHint) throws IOException {
         requireNonNull(stream);
-        
+
         Path tempDir = Files.createTempDirectory("SejdaIODir");
 
-        if (tempDir.toFile().listFiles().length > 0) {
+        if (requireNonNull(tempDir.toFile().listFiles()).length > 0) {
             throw new RuntimeException("Temp dir collision: " + tempDir.toAbsolutePath());
         }
-        
+
         Path temp = tempDir.resolve(filenameHint);
-        
+
         if (Files.exists(temp)) {
             throw new RuntimeException("Temp file collision: " + temp.toAbsolutePath());
         }
-        
+
         tempDir.toFile().deleteOnExit();
         temp.toFile().deleteOnExit();
 
@@ -162,8 +151,6 @@ public final class SeekableSources {
 
     /**
      * Factory method to create an {@link OffsettableSeekableSource} from a {@link SeekableSource}
-     * @param source
-     * @return
      */
     public static OffsettableSeekableSource asOffsettable(SeekableSource source) {
         requireNonNull(source);

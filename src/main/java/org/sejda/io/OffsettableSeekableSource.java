@@ -1,6 +1,6 @@
 package org.sejda.io;
 /*
- * Copyright 2022 Sober Lemur S.a.s. di Vacondio Andrea and Sejda BV
+ * Copyright 2022 Sober Lemur S.r.l. and Sejda BV
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ public interface OffsettableSeekableSource extends SeekableSource {
     /**
      * Sets the offset for this source
      *
-     * @param offset
      * @throws IllegalArgumentException if the offset is negative or if it would lead to a negative size
      */
     void offset(long offset) throws IOException;
