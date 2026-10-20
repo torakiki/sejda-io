@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import static java.util.Objects.checkFromIndexSize;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
-import static org.sejda.commons.util.RequireUtils.requireState;
 
 /**
  * Bridge between {@link SeekableSource} and {@link InputStream}
@@ -42,17 +42,18 @@ class SeekableSourceInputStream extends InputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
-        if (available() > 0) {
-            return getSource().read(ByteBuffer.wrap(b, 0, Math.min(b.length, available())));
-        }
-        return -1;
+        return read(b, 0, b.length);
     }
 
     @Override
     public int read(byte[] b, int offset, int length) throws IOException {
+        var source = getSource();
+        checkFromIndexSize(offset, length, b.length);
+        if (length == 0) {
+            return 0;
+        }
         if (available() > 0) {
-            return getSource().read(ByteBuffer.wrap(b, Math.min(b.length, offset),
-                    Math.min(length, Math.min(b.length - offset, available()))));
+            return source.read(ByteBuffer.wrap(b, offset, Math.min(length, available())));
         }
         return -1;
     }
@@ -70,8 +71,10 @@ class SeekableSourceInputStream extends InputStream {
         return source.forward(Math.min(offset, available())).position() - start;
     }
 
-    private SeekableSource getSource() {
-        requireState(wrapped.isOpen(), "The SeekableSource has been closed");
+    private SeekableSource getSource() throws IOException {
+        if (!wrapped.isOpen()) {
+            throw new IOException("The SeekableSource has been closed");
+        }
         return wrapped;
     }
 }

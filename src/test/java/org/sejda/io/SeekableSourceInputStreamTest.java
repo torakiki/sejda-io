@@ -61,7 +61,7 @@ public class SeekableSourceInputStreamTest {
     @Test
     public void readClosed() {
         when(source.isOpen()).thenReturn(false);
-        assertThrows(IllegalStateException.class, () -> victim.read());
+        assertThrows(IOException.class, () -> victim.read());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class SeekableSourceInputStreamTest {
     @Test
     public void readByteArrayClosed() {
         when(source.isOpen()).thenReturn(false);
-        assertThrows(IllegalStateException.class, () -> victim.read(new byte[10]));
+        assertThrows(IOException.class, () -> victim.read(new byte[10]));
     }
 
     @Test
@@ -102,7 +102,7 @@ public class SeekableSourceInputStreamTest {
     @Test
     public void readByteArrayWithPosClosed() {
         when(source.isOpen()).thenReturn(false);
-        assertThrows(IllegalStateException.class, () -> victim.read(new byte[10], 5, 2));
+        assertThrows(IOException.class, () -> victim.read(new byte[10], 5, 2));
     }
 
     @Test
@@ -113,6 +113,36 @@ public class SeekableSourceInputStreamTest {
         assertEquals(-1, source.read());
         byte[] b = new byte[10];
         assertEquals(-1, victim.read(b, 5, 2));
+    }
+
+    @Test
+    public void zeroLengthRead() throws IOException {
+        ByteArraySeekableSource source = new ByteArraySeekableSource(new byte[] { -1, 1, 0, 1 });
+        SeekableSourceInputStream victim = new SeekableSourceInputStream(source);
+        assertEquals(0, victim.read(new byte[10], 0, 0));
+        assertEquals(0, victim.read(new byte[0]));
+        assertEquals(0, source.position());
+        source.position(4);
+        assertEquals(0, victim.read(new byte[10], 5, 0));
+        assertEquals(0, victim.read(new byte[0]));
+        assertEquals(-1, victim.read());
+    }
+
+    @Test
+    public void zeroLengthReadClosed() {
+        when(source.isOpen()).thenReturn(false);
+        assertThrows(IOException.class, () -> victim.read(new byte[10], 0, 0));
+        assertThrows(IOException.class, () -> victim.read(new byte[0]));
+    }
+
+    @Test
+    public void readByteArrayOutOfBounds() {
+        when(source.size()).thenReturn(20L);
+        byte[] b = new byte[10];
+        assertThrows(IndexOutOfBoundsException.class, () -> victim.read(b, -1, 2));
+        assertThrows(IndexOutOfBoundsException.class, () -> victim.read(b, 0, -1));
+        assertThrows(IndexOutOfBoundsException.class, () -> victim.read(b, 5, 6));
+        assertThrows(IndexOutOfBoundsException.class, () -> victim.read(b, 11, 0));
     }
 
     @Test
@@ -149,6 +179,6 @@ public class SeekableSourceInputStreamTest {
     @Test
     public void skipClosed() {
         when(source.isOpen()).thenReturn(false);
-        assertThrows(IllegalStateException.class, () -> victim.skip(5));
+        assertThrows(IOException.class, () -> victim.skip(5));
     }
 }
