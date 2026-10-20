@@ -24,7 +24,9 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -152,6 +154,16 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     public void readBigBuff() throws IOException {
         ByteBuffer dst = ByteBuffer.allocate(8000);
         assertEquals(100, victim.read(dst));
+    }
+
+    @Test
+    public void readBigBuffDoesntChangeLimit() throws IOException {
+        byte[] expected = Arrays.copyOfRange(Files.readAllBytes(tempFile), 50, 150);
+        ByteBuffer dst = ByteBuffer.allocate(500).position(10);
+        assertEquals(100, victim.read(dst));
+        assertEquals(110, dst.position());
+        assertEquals(500, dst.limit());
+        assertArrayEquals(expected, Arrays.copyOfRange(dst.array(), 10, 110));
     }
 
 }

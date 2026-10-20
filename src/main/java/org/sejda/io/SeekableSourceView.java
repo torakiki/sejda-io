@@ -77,11 +77,10 @@ class SeekableSourceView extends BaseSeekableSource {
         }
         if (hasAvailable()) {
             wrapped.position(startingPosition + currentPosition);
-            if (dst.remaining() > available()) {
-                dst.limit(dst.position() + (int) available());
-            }
-            int read = wrapped.read(dst);
+            var window = dst.slice(dst.position(), (int) Math.min(dst.remaining(), available()));
+            int read = wrapped.read(window);
             if (read > 0) {
+                dst.position(dst.position() + read);
                 currentPosition += read;
             }
             return read;
