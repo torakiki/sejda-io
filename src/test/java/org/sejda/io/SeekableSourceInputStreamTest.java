@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -150,6 +151,21 @@ public class SeekableSourceInputStreamTest {
         when(source.size()).thenReturn(20L);
         when(source.position()).thenReturn(3L);
         assertEquals(17, victim.available());
+    }
+
+    @Test
+    public void availableLargeSource() throws IOException {
+        when(source.size()).thenReturn(Integer.MAX_VALUE + 5L);
+        when(source.position()).thenReturn(0L);
+        assertEquals(Integer.MAX_VALUE, victim.available());
+    }
+
+    @Test
+    public void readLargeSource() throws IOException {
+        when(source.size()).thenReturn(3_000_000_000L);
+        when(source.position()).thenReturn(0L);
+        when(source.read(any(ByteBuffer.class))).thenReturn(10);
+        assertEquals(10, victim.read(new byte[10]));
     }
 
     @Test

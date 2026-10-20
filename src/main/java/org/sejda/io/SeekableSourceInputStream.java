@@ -61,7 +61,7 @@ class SeekableSourceInputStream extends InputStream {
     @Override
     public int available() throws IOException {
         SeekableSource source = getSource();
-        return (int) Math.max(0, (source.size() - source.position()));
+        return Math.clamp(source.size() - source.position(), 0, Integer.MAX_VALUE);
     }
 
     @Override
