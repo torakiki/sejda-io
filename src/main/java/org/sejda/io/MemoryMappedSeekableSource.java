@@ -108,6 +108,9 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     @Override
     public int read(ByteBuffer dst) throws IOException {
         requireOpen();
+        if (!dst.hasRemaining()) {
+            return 0;
+        }
         int zeroBasedPagesNumber = (int) (position() / pageSize);
         ByteBuffer page = pages.get(zeroBasedPagesNumber);
         int relativePosition = (int) (position() - (zeroBasedPagesNumber * pageSize));

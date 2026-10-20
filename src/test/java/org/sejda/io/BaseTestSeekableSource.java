@@ -79,6 +79,28 @@ public abstract class BaseTestSeekableSource {
     }
 
     @Test
+    public void readEmptyBuff() throws IOException {
+        victim().position(1);
+        assertEquals(0, victim().read(ByteBuffer.allocate(0)));
+        assertEquals(1, victim().position());
+        victim().position(victim().size());
+        assertEquals(0, victim().read(ByteBuffer.allocate(0)));
+        assertEquals(victim().size(), victim().position());
+    }
+
+    @Test
+    public void readFullBuff() throws IOException {
+        ByteBuffer full = ByteBuffer.allocate(10).position(10);
+        victim().position(1);
+        assertEquals(0, victim().read(full));
+        assertEquals(1, victim().position());
+        victim().position(victim().size());
+        assertEquals(0, victim().read(full));
+        assertEquals(victim().size(), victim().position());
+        assertEquals(10, full.position());
+    }
+
+    @Test
     public void forward() throws IOException {
         assertEquals(0, victim().position());
         assertEquals(1, victim().forward(1).position());

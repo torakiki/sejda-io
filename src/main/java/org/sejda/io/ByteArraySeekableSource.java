@@ -57,6 +57,9 @@ public class ByteArraySeekableSource extends BaseSeekableSource {
     @Override
     public int read(ByteBuffer dst) throws IOException {
         requireOpen();
+        if (!dst.hasRemaining()) {
+            return 0;
+        }
         if (position < size()) {
             int toCopy = (int) Math.min(dst.remaining(), size() - position);
             dst.put(bytes, (int) position, toCopy);

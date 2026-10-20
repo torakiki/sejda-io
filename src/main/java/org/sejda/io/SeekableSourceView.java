@@ -72,6 +72,9 @@ class SeekableSourceView extends BaseSeekableSource {
     public int read(ByteBuffer dst) throws IOException {
         SeekableSource wrapped = supplier.get();
         requireOpen();
+        if (!dst.hasRemaining()) {
+            return 0;
+        }
         if (hasAvailable()) {
             wrapped.position(startingPosition + currentPosition);
             if (dst.remaining() > available()) {
