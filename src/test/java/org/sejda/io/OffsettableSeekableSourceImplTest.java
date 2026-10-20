@@ -123,6 +123,17 @@ public class OffsettableSeekableSourceImplTest extends BaseTestSeekableSource {
     }
 
     @Test
+    public void viewFromOffset() throws IOException {
+        victim.position(1);
+        SeekableSource view = victim.view(1, 10);
+        assertEquals(2, view.size());
+        assertEquals('b', view.read());
+        assertEquals('c', view.read());
+        assertEquals(-1, view.read());
+        assertEquals(1, victim.position());
+    }
+
+    @Test
     public void closedWrapped() throws IOException {
         this.wrapped.close();
         assertFalse(victim.isOpen());
