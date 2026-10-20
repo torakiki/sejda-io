@@ -25,7 +25,9 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -99,6 +101,43 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
             assertNotEquals(-1, victim.read());
             assertNotEquals(-1, victim.read());
             assertEquals(52, victim.position());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    public void pagedViewRead() throws IOException {
+        System.setProperty(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, "50");
+        Path tempFile = Files.createTempFile("SejdaIO", null);
+        try {
+            Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
+                    StandardCopyOption.REPLACE_EXISTING);
+            byte[] expected = Files.readAllBytes(tempFile);
+            victim = new MemoryMappedSeekableSource(tempFile);
+            SeekableSource view = victim.view(40, 30);
+            for (int i = 40; i < 70; i++) {
+                assertEquals(expected[i] & 0xff, view.read());
+            }
+            assertEquals(-1, view.read());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    public void pagedViewReadBuff() throws IOException {
+        System.setProperty(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, "50");
+        Path tempFile = Files.createTempFile("SejdaIO", null);
+        try {
+            Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
+                    StandardCopyOption.REPLACE_EXISTING);
+            byte[] expected = Files.readAllBytes(tempFile);
+            victim = new MemoryMappedSeekableSource(tempFile);
+            SeekableSource view = victim.view(30, 120);
+            ByteBuffer dst = ByteBuffer.allocate(120);
+            assertEquals(120, view.read(dst));
+            assertArrayEquals(Arrays.copyOfRange(expected, 30, 150), dst.array());
         } finally {
             Files.deleteIfExists(tempFile);
         }
