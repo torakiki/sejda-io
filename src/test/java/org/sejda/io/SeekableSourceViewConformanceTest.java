@@ -29,19 +29,28 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Behaviour of views that must hold for every {@link SeekableSource} implementation: views and their parent don't move each other's position and views
- * honor their boundaries.
+ * Behaviour of views that must hold for every {@link SeekableSource} implementation: views and their parent don't move each other's position, also when
+ * read on different threads, as SAMBox does when its async writer reads stream contents while the parser reads the document, and views honor their
+ * boundaries.
  */
-public class SeekableSourceViewContractTest {
+public class SeekableSourceViewConformanceTest {
 
     private static final int SOURCE_SIZE = 3000;
+    private static final int HANDED_OFF_VIEWS = 20;
+    private static final long TIMEOUT_SECONDS = 10;
 
     private Path file;
 
@@ -159,6 +168,101 @@ public class SeekableSourceViewContractTest {
         }
     }
 
+    /**
+     * A view and its parent read at the same time on different threads return the right bytes, so the view can't be reading through the parent's
+     * position.
+     */
+    @ParameterizedTest
+    @MethodSource("sources")
+    public void viewReadOnPlatformThreadWhileParentIsRead(SourceFactory factory) throws Exception {
+        assertViewReadWhileParentIsRead(factory, Executors.newSingleThreadExecutor());
+    }
+
+    /**
+     * Same as {@link #viewReadOnPlatformThreadWhileParentIsRead(SourceFactory)} with the view read on a virtual thread, so views don't depend on the
+     * reading thread being a platform thread.
+     */
+    @ParameterizedTest
+    @MethodSource("sources")
+    public void viewReadOnVirtualThreadWhileParentIsRead(SourceFactory factory) throws Exception {
+        assertViewReadWhileParentIsRead(factory, Executors.newVirtualThreadPerTaskExecutor());
+    }
+
+    /**
+     * Views created on one thread and read on another while the first keeps reading the parent: the SAMBox pattern, where the parser creates the stream
+     * views and the async writer reads them.
+     */
+    @ParameterizedTest
+    @MethodSource("sources")
+    public void viewsHandedOffToAnotherThread(SourceFactory factory) throws Exception {
+        var writer = Executors.newSingleThreadExecutor();
+        try (var source = factory.open(file)) {
+            var handedOff = new LinkedBlockingQueue<HandedOffView>();
+            var writes = writer.submit(() -> {
+                for (var i = 0; i < HANDED_OFF_VIEWS; i++) {
+                    var next = handedOff.poll(TIMEOUT_SECONDS, SECONDS);
+                    assertNotNull(next, "No view was handed off");
+                    readAndVerify(next.view(), next.start());
+                }
+                return null;
+            });
+            try {
+                for (var i = 0; i < HANDED_OFF_VIEWS; i++) {
+                    var start = i * 100L;
+                    handedOff.put(new HandedOffView(start, source.view(start, 200)));
+                    readAndVerify(source, 0);
+                }
+                writes.get(TIMEOUT_SECONDS, SECONDS);
+            } finally {
+                writer.shutdownNow();
+            }
+        }
+    }
+
+    private void assertViewReadWhileParentIsRead(SourceFactory factory, ExecutorService viewReader) throws Exception {
+        try (var source = factory.open(file)) {
+            var view = source.view(100, 2000);
+            try {
+                var viewReads = viewReader.submit(() -> {
+                    readRepeatedly(view, 100);
+                    return null;
+                });
+                readRepeatedly(source, 0);
+                viewReads.get(TIMEOUT_SECONDS, SECONDS);
+            } finally {
+                viewReader.shutdownNow();
+            }
+        }
+    }
+
+    private static void readRepeatedly(SeekableSource source, long offset) throws IOException {
+        for (var i = 0; i < 100; i++) {
+            readAndVerify(source, offset);
+        }
+    }
+
+    /**
+     * Reads the whole source from its beginning, alternating buffer and single byte reads, and verifies each byte against the test file content starting at
+     * the given offset.
+     */
+    private static void readAndVerify(SeekableSource source, long offset) throws IOException {
+        source.position(0);
+        var buffer = ByteBuffer.allocate(64);
+        var index = 0L;
+        for (var read = source.read(buffer); read != -1; read = source.read(buffer)) {
+            assertArrayEquals(expectedBytes(offset + index, read), Arrays.copyOf(buffer.array(), read));
+            index += read;
+            buffer.clear();
+            var single = source.read();
+            if (single == -1) {
+                break;
+            }
+            assertEquals(expectedByte(offset + index), single);
+            index++;
+        }
+        assertEquals(source.size(), index);
+    }
+
     private static byte[] readBytes(SeekableSource source, int length) throws IOException {
         var dst = ByteBuffer.allocate(length);
         assertEquals(length, source.read(dst));
@@ -180,5 +284,8 @@ public class SeekableSourceViewContractTest {
     @FunctionalInterface
     interface SourceFactory {
         SeekableSource open(Path file) throws IOException;
+    }
+
+    private record HandedOffView(long start, SeekableSource view) {
     }
 }
