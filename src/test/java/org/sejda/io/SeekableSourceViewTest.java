@@ -159,10 +159,10 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     @Test
     public void readBigBuffDoesntChangeLimit() throws IOException {
         byte[] expected = Arrays.copyOfRange(Files.readAllBytes(tempFile), 50, 150);
-        ByteBuffer dst = ByteBuffer.allocate(500).position(10);
+        ByteBuffer dst = ByteBuffer.allocate(500).limit(300).position(10);
         assertEquals(100, victim.read(dst));
         assertEquals(110, dst.position());
-        assertEquals(500, dst.limit());
+        assertEquals(300, dst.limit());
         assertArrayEquals(expected, Arrays.copyOfRange(dst.array(), 10, 110));
     }
 
