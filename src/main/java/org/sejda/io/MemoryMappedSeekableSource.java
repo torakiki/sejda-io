@@ -149,7 +149,7 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
         int relativePosition = (int) (position() - (zeroBasedPagesNumber * pageSize));
         if (relativePosition < page.limit()) {
             position++;
-            return page.get(relativePosition);
+            return page.get(relativePosition) & 0xff;
         }
         return -1;
     }

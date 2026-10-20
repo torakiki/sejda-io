@@ -73,6 +73,20 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
     }
 
     @Test
+    public void readUnsigned() throws IOException {
+        var bytesFile = Files.write(Files.createTempFile("SejdaIO", null), new byte[] { 0, 127, -128, -1 });
+        try (var source = new MemoryMappedSeekableSource(bytesFile)) {
+            assertEquals(0, source.read());
+            assertEquals(127, source.read());
+            assertEquals(128, source.read());
+            assertEquals(255, source.read());
+            assertEquals(-1, source.read());
+        } finally {
+            Files.deleteIfExists(bytesFile);
+        }
+    }
+
+    @Test
     public void pagedRead() throws IOException {
         System.setProperty(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, "50");
         Path tempFile = Files.createTempFile("SejdaIO", null);
