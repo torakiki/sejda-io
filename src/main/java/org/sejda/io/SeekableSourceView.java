@@ -80,8 +80,8 @@ class SeekableSourceView extends BaseSeekableSource {
             int read = wrapped.read(dst);
             if (read > 0) {
                 currentPosition += read;
-                return read;
             }
+            return read;
         }
         return -1;
     }

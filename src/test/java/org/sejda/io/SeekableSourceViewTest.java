@@ -149,6 +149,26 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     }
 
     @Test
+    public void readEmptyBuff() throws IOException {
+        victim.position(3);
+        assertEquals(0, victim.read(ByteBuffer.allocate(0)));
+        assertEquals(3, victim.position());
+        victim.position(victim.size());
+        assertEquals(-1, victim.read(ByteBuffer.allocate(0)));
+    }
+
+    @Test
+    public void readFullBuff() throws IOException {
+        victim.position(3);
+        ByteBuffer full = ByteBuffer.allocate(10).position(10);
+        assertEquals(0, victim.read(full));
+        assertEquals(10, full.position());
+        assertEquals(3, victim.position());
+        victim.position(victim.size());
+        assertEquals(-1, victim.read(full));
+    }
+
+    @Test
     public void readBigBuff() throws IOException {
         ByteBuffer dst = ByteBuffer.allocate(8000);
         assertEquals(100, victim.read(dst));
