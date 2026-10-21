@@ -60,7 +60,7 @@ public class BufferedCountingChannelWriterTest {
     @Test
     public void nullConstructor() {
         assertThrows(IllegalArgumentException.class, () -> new BufferedCountingChannelWriter(null),
-                "Cannot write to a null channell");
+                "Cannot write to a null channel");
     }
 
     @Test
