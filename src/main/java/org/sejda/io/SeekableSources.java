@@ -61,7 +61,7 @@ public final class SeekableSources {
 
     /**
      * Factory method to create a {@link SeekableSource} from a {@link File}. An attempt is made to return the best {@link SeekableSource} implementation based on the size of the
-     * file and bitness of the JVM.
+     * file.
      *
      * @return a {@link SeekableSource} from the given file.
      */
@@ -72,15 +72,13 @@ public final class SeekableSources {
 
     /**
      * Factory method to create a {@link SeekableSource} from a {@link Path}. An attempt is made to return the best {@link SeekableSource} implementation based on the size of the
-     * file and bitness of the JVM.
+     * file.
      *
      * @return a {@link SeekableSource} from the given file.
      */
     public static SeekableSource seekableSourceFrom(Path path) throws IOException {
         requireNonNull(path);
-        if (!"32".equals(System.getProperty("sun.arch.data.model")) && !Boolean.getBoolean(
-                DISABLE_MEMORY_MAPPED_PROPERTY) && Files.size(path) > Long.getLong(MAPPED_SIZE_THRESHOLD_PROPERTY,
-                MB_16)) {
+        if (!Boolean.getBoolean(DISABLE_MEMORY_MAPPED_PROPERTY) && Files.size(path) > Long.getLong(MAPPED_SIZE_THRESHOLD_PROPERTY, MB_16)) {
             return new BufferedSeekableSource(new MemoryMappedSeekableSource(path));
         }
         return new BufferedSeekableSource(new FileChannelSeekableSource(path));

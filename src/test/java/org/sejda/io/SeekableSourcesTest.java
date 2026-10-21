@@ -15,8 +15,6 @@
  */
 package org.sejda.io;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -45,19 +43,6 @@ import static org.sejda.io.SeekableSources.seekableSourceFrom;
  * @author Andrea Vacondio
  */
 public class SeekableSourcesTest {
-
-    private static String BITNESS;
-
-    @BeforeAll
-    public static void before() {
-        BITNESS = System.getProperty("sun.arch.data.model");
-        System.setProperty("sun.arch.data.model", "64");
-    }
-
-    @AfterAll
-    public static void after() {
-        System.setProperty("sun.arch.data.model", BITNESS);
-    }
 
     @Test
     public void nullFileSeekableSourceFrom() {
@@ -136,24 +121,6 @@ public class SeekableSourcesTest {
         } finally {
             System.getProperties().remove(MAPPED_SIZE_THRESHOLD_PROPERTY);
             System.getProperties().remove(DISABLE_MEMORY_MAPPED_PROPERTY);
-        }
-    }
-
-    @Test
-    public void nonMappedMemoryFor32bits() throws IOException {
-        try {
-            System.setProperty(MAPPED_SIZE_THRESHOLD_PROPERTY, "10");
-            System.setProperty("sun.arch.data.model", "32");
-            Path tempFile = Files.createTempFile("SejdaIO", null);
-            Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
-                    StandardCopyOption.REPLACE_EXISTING);
-            SeekableSource source = seekableSourceFrom(tempFile.toFile());
-            assertNotNull(source);
-            assertInstanceOf(BufferedSeekableSource.class, source);
-            assertInstanceOf(FileChannelSeekableSource.class, ((BufferedSeekableSource) source).wrapped());
-        } finally {
-            System.getProperties().remove(MAPPED_SIZE_THRESHOLD_PROPERTY);
-            System.setProperty("sun.arch.data.model", BITNESS);
         }
     }
 
