@@ -143,6 +143,28 @@ public class MemoryMappedSeekableSourceTest extends BaseTestSeekableSource {
         }
     }
 
+    /**
+     * Reads across two pages into a buffer whose position isn't 0, as {@link SeekableSourceInputStream} does when reading at an array offset.
+     */
+    @Test
+    public void pagedReadBuffFromBufferPosition() throws IOException {
+        System.setProperty(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, "50");
+        Path tempFile = Files.createTempFile("SejdaIO", null);
+        try {
+            Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
+                    StandardCopyOption.REPLACE_EXISTING);
+            byte[] expected = Files.readAllBytes(tempFile);
+            victim = new MemoryMappedSeekableSource(tempFile);
+            victim.position(30);
+            ByteBuffer dst = ByteBuffer.allocate(100).position(10);
+            assertEquals(90, victim.read(dst));
+            assertEquals(100, dst.position());
+            assertArrayEquals(Arrays.copyOfRange(expected, 30, 120), Arrays.copyOfRange(dst.array(), 10, 100));
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
     @Test
     public void readBuff() throws IOException {
         ByteBuffer dst = ByteBuffer.allocate(20);

@@ -37,7 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  */
 public class SeekableSourceViewTest extends BaseTestSeekableSource {
-    private SeekableSourceView victim;
+    private FileChannelSeekableSource parent;
+    private SeekableSource victim;
     private Path tempFile;
 
     @BeforeEach
@@ -45,38 +46,45 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
         tempFile = Files.createTempFile("SejdaIO", null);
         Files.copy(getClass().getResourceAsStream("/pdf/simple_test.pdf"), tempFile,
                 StandardCopyOption.REPLACE_EXISTING);
-        victim = new SeekableSourceView(() -> new FileChannelSeekableSource(tempFile.toFile()), "id", 50, 100);
+        parent = new FileChannelSeekableSource(tempFile);
+        victim = parent.view(50, 100);
     }
 
     @AfterEach
     public void after() throws IOException {
+        parent.close();
         Files.deleteIfExists(tempFile);
     }
 
     @Test
     public void nullSourceConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> new SeekableSourceView(null, "id", 50, 100),
-                "Input decorated SeekableSource cannot be null");
+        assertThrows(IllegalArgumentException.class, () -> new SeekableSourceView(null, (dst, position) -> -1, 50, 100),
+                "Parent SeekableSource cannot be null");
+    }
+
+    @Test
+    public void nullReaderConstructor() {
+        assertThrows(IllegalArgumentException.class, () -> new SeekableSourceView(parent, null, 50, 100),
+                "Positional reader cannot be null");
     }
 
     @Test
     public void negativeStartPositionConstructor() {
         assertThrows(IllegalArgumentException.class,
-                () -> new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1 }), "id", -10, 100),
+                () -> new ByteArraySeekableSource(new byte[] { -1 }).view(-10, 100),
                 "Starting position cannot be negative");
     }
 
     @Test
     public void outOfBoundsStartPositionConstructor() {
         assertThrows(IllegalArgumentException.class,
-                () -> new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1, 2 }), "id", 3, 100),
+                () -> new ByteArraySeekableSource(new byte[] { -1, 2 }).view(3, 100),
                 "Starting position cannot be higher then wrapped source size");
     }
 
     @Test
     public void nullNonPositiveLengthConstructor() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1 }), "id", 0, 0),
+        assertThrows(IllegalArgumentException.class, () -> new ByteArraySeekableSource(new byte[] { -1 }).view(0, 0),
                 "View length must be positive");
     }
 
@@ -86,9 +94,8 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     }
 
     @Test
-    public void sizeTrimmed() {
-        assertEquals(2,
-                new SeekableSourceView(() -> new ByteArraySeekableSource(new byte[] { -1, 2 }), "id", 0, 100).size());
+    public void sizeTrimmed() throws IOException {
+        assertEquals(2, new ByteArraySeekableSource(new byte[] { -1, 2 }).view(0, 100).size());
     }
 
     @Override
@@ -107,7 +114,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     @Test
     public void parentClosed() throws IOException {
         ByteArraySeekableSource wrapped = new ByteArraySeekableSource(new byte[] { -1 });
-        victim = new SeekableSourceView(() -> wrapped, "id", 0, 1);
+        victim = wrapped.view(0, 1);
         wrapped.close();
         assertTrue(victim.isOpen());
         assertThrows(IllegalStateException.class, () -> victim.read());
@@ -116,7 +123,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     @Test
     public void closeDoesntCloseParent() throws IOException {
         ByteArraySeekableSource wrapped = new ByteArraySeekableSource(new byte[] { -1 });
-        victim = new SeekableSourceView(() -> wrapped, "id", 0, 1);
+        victim = wrapped.view(0, 1);
         victim.close();
         assertTrue(wrapped.isOpen());
     }

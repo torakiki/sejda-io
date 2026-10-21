@@ -39,6 +39,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -57,6 +58,7 @@ public class SeekableSourceViewConformanceTest {
     static Stream<Named<SourceFactory>> sources() {
         return Stream.of(source("FileChannel", FileChannelSeekableSource::new),
                 source("MemoryMapped", MemoryMappedSeekableSource::new),
+                source("Paged MemoryMapped", SeekableSourceViewConformanceTest::pagedMemoryMapped),
                 source("ByteArray", path -> new ByteArraySeekableSource(Files.readAllBytes(path))),
                 source("Buffered FileChannel", path -> new BufferedSeekableSource(new FileChannelSeekableSource(path))),
                 source("Buffered MemoryMapped", path -> new BufferedSeekableSource(new MemoryMappedSeekableSource(path))));
@@ -64,6 +66,18 @@ public class SeekableSourceViewConformanceTest {
 
     private static Named<SourceFactory> source(String name, SourceFactory factory) {
         return Named.of(name, factory);
+    }
+
+    /**
+     * Pages of a third of the file, so reads cross pages and the last page is empty, the file size being a multiple of the page size.
+     */
+    private static SeekableSource pagedMemoryMapped(Path path) throws IOException {
+        System.setProperty(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, Integer.toString(SOURCE_SIZE / 3));
+        try {
+            return new MemoryMappedSeekableSource(path);
+        } finally {
+            System.clearProperty(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY);
+        }
     }
 
     @BeforeEach
@@ -166,6 +180,17 @@ public class SeekableSourceViewConformanceTest {
             assertEquals(expectedByte(0), source.read());
             assertEquals(expectedByte(500), sibling.read());
         }
+    }
+
+    @ParameterizedTest
+    @MethodSource("sources")
+    public void viewReadAfterParentIsClosed(SourceFactory factory) throws IOException {
+        var source = factory.open(file);
+        var view = source.view(100, 200);
+        view.read();
+        source.close();
+        assertThrows(IllegalStateException.class, view::read);
+        assertThrows(IllegalStateException.class, () -> view.read(ByteBuffer.allocate(10)));
     }
 
     /**

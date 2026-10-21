@@ -30,16 +30,15 @@ import static org.sejda.commons.util.RequireUtils.requireArg;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
- * A {@link SeekableSource} implementation based on {@link FileChannel}.
+ * A {@link SeekableSource} implementation based on {@link FileChannel}. Views read through the same channel at absolute positions, so they don't change the
+ * source position and no further channel is opened. Since the channel is shared, closing it on interrupt, as described in
+ * {@link java.nio.channels.InterruptibleChannel}, makes the source and all its views unreadable.
  *
  * @author Andrea Vacondio
  */
 public class FileChannelSeekableSource extends BaseSeekableSource {
     private final FileChannel channel;
-    private Path path;
     private final long size;
-    private final ThreadBoundCopiesSupplier<FileChannelSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
-            () -> new FileChannelSeekableSource(path));
 
     public FileChannelSeekableSource(Path path) {
         requireNotNullArg(path, "Input path cannot be null");
@@ -50,7 +49,6 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        this.path = path;
     }
 
     public FileChannelSeekableSource(File file) {
@@ -78,7 +76,6 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
     @Override
     public void close() throws IOException {
         super.close();
-        IOUtils.close(localCopiesSupplier);
         IOUtils.close(channel);
     }
 
@@ -102,6 +99,6 @@ public class FileChannelSeekableSource extends BaseSeekableSource {
     @Override
     public SeekableSource view(long startingPosition, long length) throws IOException {
         requireOpen();
-        return new SeekableSourceView(localCopiesSupplier, id(), startingPosition, length);
+        return new SeekableSourceView(this, channel::read, startingPosition, length);
     }
 }

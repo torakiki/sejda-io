@@ -57,13 +57,20 @@ public class ByteArraySeekableSource extends BaseSeekableSource {
     @Override
     public int read(ByteBuffer dst) throws IOException {
         requireOpen();
+        int read = readAt(dst, position);
+        if (read > 0) {
+            position += read;
+        }
+        return read;
+    }
+
+    private int readAt(ByteBuffer dst, long start) {
         if (!dst.hasRemaining()) {
             return 0;
         }
-        if (position < size()) {
-            int toCopy = (int) Math.min(dst.remaining(), size() - position);
-            dst.put(bytes, (int) position, toCopy);
-            position += toCopy;
+        if (start < size()) {
+            int toCopy = (int) Math.min(dst.remaining(), size() - start);
+            dst.put(bytes, (int) start, toCopy);
             return toCopy;
         }
         return -1;
@@ -87,7 +94,7 @@ public class ByteArraySeekableSource extends BaseSeekableSource {
     @Override
     public SeekableSource view(long startingPosition, long length) throws IOException {
         requireOpen();
-        return new SeekableSourceView(() -> new ByteArraySeekableSource(bytes), id(), startingPosition, length);
+        return new SeekableSourceView(this, this::readAt, startingPosition, length);
     }
 
 }

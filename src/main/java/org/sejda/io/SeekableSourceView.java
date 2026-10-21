@@ -17,36 +17,38 @@ package org.sejda.io;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.function.Supplier;
 
 import static org.sejda.commons.util.RequireUtils.requireArg;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 import static org.sejda.commons.util.RequireUtils.requireState;
 
 /**
- * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed. The view
- * works on a thread local copy of the parent source so the parent position is not modified when a read method is called on the view.
+ * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed.
+ * Reading the view doesn't modify the parent position.
  *
  * @author Andrea Vacondio
  */
 class SeekableSourceView extends BaseSeekableSource {
+    private final SeekableSource parent;
+    private final AbsolutePositionReader reader;
     private final long startingPosition;
     private final long length;
     private long currentPosition;
-    private final Supplier<? extends SeekableSource> supplier;
 
-    public SeekableSourceView(Supplier<? extends SeekableSource> supplier, String id, long startingPosition,
-            long length) {
-        super(id);
+    /**
+     * Creates a view over the given portion of the parent, read through the given reader.
+     */
+    SeekableSourceView(SeekableSource parent, AbsolutePositionReader reader, long startingPosition, long length) {
+        requireNotNullArg(parent, "Parent SeekableSource cannot be null");
+        requireNotNullArg(reader, "Absolute position reader cannot be null");
         requireArg(startingPosition >= 0, "Starting position cannot be negative");
         requireArg(length > 0, "View length must be positive");
-        requireNotNullArg(supplier, "Input decorated SeekableSource cannot be null");
+        requireArg(startingPosition < parent.size(), "Starting position cannot be higher then wrapped source size");
+        super(parent.id());
+        this.parent = parent;
+        this.reader = reader;
         this.startingPosition = startingPosition;
-        this.currentPosition = 0;
-        SeekableSource wrapped = supplier.get();
-        requireArg(startingPosition < wrapped.size(), "Starting position cannot be higher then wrapped source size");
-        this.length = Math.min(length, wrapped.size() - startingPosition);
-        this.supplier = supplier;
+        this.length = Math.min(length, parent.size() - startingPosition);
     }
 
     @Override
@@ -55,11 +57,9 @@ class SeekableSourceView extends BaseSeekableSource {
     }
 
     @Override
-    public SeekableSource position(long newPosition) throws IOException {
-        SeekableSource wrapped = supplier.get();
+    public SeekableSource position(long newPosition) {
         requireArg(newPosition >= 0, "Cannot set position to a negative value");
         this.currentPosition = Math.min(length, newPosition);
-        wrapped.position(startingPosition + currentPosition);
         return this;
     }
 
@@ -70,15 +70,13 @@ class SeekableSourceView extends BaseSeekableSource {
 
     @Override
     public int read(ByteBuffer dst) throws IOException {
-        SeekableSource wrapped = supplier.get();
         requireOpen();
         if (!dst.hasRemaining()) {
             return 0;
         }
         if (hasAvailable()) {
-            wrapped.position(startingPosition + currentPosition);
             var window = dst.slice(dst.position(), (int) Math.min(dst.remaining(), available()));
-            int read = wrapped.read(window);
+            int read = reader.read(window, startingPosition + currentPosition);
             if (read > 0) {
                 dst.position(dst.position() + read);
                 currentPosition += read;
@@ -91,11 +89,12 @@ class SeekableSourceView extends BaseSeekableSource {
     @Override
     public int read() throws IOException {
         requireOpen();
-        SeekableSource wrapped = supplier.get();
         if (hasAvailable()) {
-            wrapped.position(startingPosition + currentPosition);
-            currentPosition++;
-            return wrapped.read();
+            var buffer = ByteBuffer.allocate(1);
+            if (reader.read(buffer, startingPosition + currentPosition) > 0) {
+                currentPosition++;
+                return buffer.get(0) & 0xff;
+            }
         }
         return -1;
     }
@@ -117,8 +116,7 @@ class SeekableSourceView extends BaseSeekableSource {
     @Override
     public void requireOpen() throws IOException {
         super.requireOpen();
-        SeekableSource wrapped = supplier.get();
-        requireState(wrapped.isOpen(), "The original SeekableSource has been closed");
+        requireState(parent.isOpen(), "The original SeekableSource has been closed");
     }
 
     /**

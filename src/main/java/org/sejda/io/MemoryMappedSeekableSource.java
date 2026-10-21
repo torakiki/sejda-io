@@ -15,7 +15,6 @@
  */
 package org.sejda.io;
 
-import org.sejda.commons.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Optional.ofNullable;
 import static org.sejda.commons.util.RequireUtils.requireArg;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
@@ -50,8 +48,6 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     private final List<ByteBuffer> pages = new ArrayList<>();
     private final Arena arena;
     private final long size;
-    private final ThreadBoundCopiesSupplier<MemoryMappedSeekableSource> localCopiesSupplier = new ThreadBoundCopiesSupplier<>(
-            () -> new MemoryMappedSeekableSource(this));
     private long position;
 
     public MemoryMappedSeekableSource(Path path) throws IOException {
@@ -78,16 +74,6 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
         this(file.toPath());
     }
 
-    private MemoryMappedSeekableSource(MemoryMappedSeekableSource parent) {
-        super(parent.id());
-        this.size = parent.size;
-        for (ByteBuffer page : parent.pages) {
-            this.pages.add(page.duplicate());
-        }
-        this.arena = null;
-    }
-
-
     @Override
     public long position() {
         return position;
@@ -108,40 +94,34 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     @Override
     public int read(ByteBuffer dst) throws IOException {
         requireOpen();
+        int read = readAt(dst, position);
+        if (read > 0) {
+            position += read;
+        }
+        return read;
+    }
+
+    /**
+     * Copies with absolute indexes only, so the pages' positions are never changed and the source and its views can read them concurrently.
+     */
+    private int readAt(ByteBuffer dst, long start) {
         if (!dst.hasRemaining()) {
             return 0;
         }
-        int zeroBasedPagesNumber = (int) (position() / pageSize);
-        ByteBuffer page = pages.get(zeroBasedPagesNumber);
-        int relativePosition = (int) (position() - (zeroBasedPagesNumber * pageSize));
-        if (relativePosition < page.limit()) {
-            int read = readPage(dst, zeroBasedPagesNumber, relativePosition);
-            while (dst.hasRemaining()) {
-                int readBytes = readPage(dst, ++zeroBasedPagesNumber, 0);
-                if (readBytes == 0) {
-                    break;
-                }
-                read += readBytes;
-            }
-            position += read;
-            return read;
+        if (start >= size) {
+            return -1;
         }
-        return -1;
-    }
-
-    private int readPage(ByteBuffer dst, int pageNumber, int bufferPosition) {
-        if (pageNumber < pages.size()) {
-            ByteBuffer page = pages.get(pageNumber);
-            page.position(bufferPosition);
-            if (page.hasRemaining()) {
-                int toRead = Math.min(dst.remaining(), page.remaining());
-                byte[] bufToRead = new byte[toRead];
-                page.get(bufToRead);
-                dst.put(bufToRead);
-                return toRead;
-            }
+        int read = 0;
+        while (dst.hasRemaining() && start + read < size) {
+            long current = start + read;
+            ByteBuffer page = pages.get((int) (current / pageSize));
+            int offset = (int) (current % pageSize);
+            int length = Math.min(dst.remaining(), page.limit() - offset);
+            dst.put(dst.position(), page, offset, length);
+            dst.position(dst.position() + length);
+            read += length;
         }
-        return 0;
+        return read;
     }
 
     @Override
@@ -160,15 +140,16 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     @Override
     public void close() throws IOException {
         super.close();
-        IOUtils.close(localCopiesSupplier);
-        ofNullable(arena).filter(a -> a.scope().isAlive()).ifPresent(Arena::close);
+        if (arena.scope().isAlive()) {
+            arena.close();
+        }
         this.pages.clear();
     }
 
     @Override
     public SeekableSource view(long startingPosition, long length) throws IOException {
         requireOpen();
-        return new SeekableSourceView(localCopiesSupplier, id(), startingPosition, length);
+        return new SeekableSourceView(this, this::readAt, startingPosition, length);
     }
 
 }
