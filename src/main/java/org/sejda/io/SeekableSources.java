@@ -48,8 +48,9 @@ public final class SeekableSources {
      */
     public static final String INPUT_BUFFER_SIZE_PROPERTY = "org.sejda.io.buffered.input.size";
     /**
-     * Size of the pages used by {@link MemoryMappedSeekableSource}
+     * @deprecated not used, {@link MemoryMappedSeekableSource} maps the whole file as a single segment
      */
+    @Deprecated(since = "6.0.0", forRemoval = true)
     public static final String MEMORY_MAPPED_PAGE_SIZE_PROPERTY = "org.sejda.io.memory.mapped.page.size";
 
     private static final long MB_16 = 1 << 24;

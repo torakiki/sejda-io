@@ -15,57 +15,42 @@
  */
 package org.sejda.io;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
 
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static org.sejda.commons.util.RequireUtils.requireArg;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
- * A {@link SeekableSource} implementation based on MappedByteBuffer. To overcome the int limit of the MappedByteBuffer, this source implement a pagination
- * algorithm allowing to open files of any size. The size of the pages can be configured using the {@link SeekableSources#MEMORY_MAPPED_PAGE_SIZE_PROPERTY}
- * system property.
+ * A {@link SeekableSource} implementation mapping the whole file into memory as a single {@link MemorySegment}, so files of any size can be opened.
  *
  * @author Andrea Vacondio
  *
  */
 public class MemoryMappedSeekableSource extends BaseSeekableSource {
-    private static final Logger LOG = LoggerFactory.getLogger(MemoryMappedSeekableSource.class);
-    private static final long MB_256 = 1 << 28;
-
-    private final long pageSize = Long.getLong(SeekableSources.MEMORY_MAPPED_PAGE_SIZE_PROPERTY, MB_256);
-    private final List<ByteBuffer> pages = new ArrayList<>();
     private final Arena arena;
-    private final long size;
+    private final MemorySegment segment;
     private long position;
 
     public MemoryMappedSeekableSource(Path path) throws IOException {
         requireNotNullArg(path, "Input path cannot be null");
         super(path.toAbsolutePath().toString());
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
-            this.size = channel.size();
-            int zeroBasedPagesNumber = (int) (channel.size() / pageSize);
-            arena = Arena.ofShared();
-            for (int i = 0; i <= zeroBasedPagesNumber; i++) {
-                if (i == zeroBasedPagesNumber) {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, channel.size() - (i * pageSize), arena)
-                                    .asByteBuffer());
-                } else {
-                    pages.add(i, channel.map(MapMode.READ_ONLY, i * pageSize, pageSize, arena).asByteBuffer());
-                }
+            this.arena = Arena.ofShared();
+            try {
+                this.segment = channel.map(MapMode.READ_ONLY, 0, channel.size(), arena);
+            } catch (IOException | RuntimeException e) {
+                arena.close();
+                throw e;
             }
-            LOG.debug("Created MemoryMappedSeekableSource with {} pages", pages.size());
         }
     }
 
@@ -81,13 +66,13 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
 
     @Override
     public long size() {
-        return size;
+        return segment.byteSize();
     }
 
     @Override
     public SeekableSource position(long position) {
         requireArg(position >= 0, "Cannot set position to a negative value");
-        this.position = Math.min(position, this.size);
+        this.position = Math.min(position, size());
         return this;
     }
 
@@ -102,37 +87,30 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
     }
 
     /**
-     * Copies with absolute indexes only, so the pages' positions are never changed and the source and its views can read them concurrently.
+     * Copies from the segment at absolute indexes only, so the source and its views can read it concurrently.
      */
     private int readAt(ByteBuffer dst, long start) {
         if (!dst.hasRemaining()) {
             return 0;
         }
-        if (start >= size) {
+        if (start >= size()) {
             return -1;
         }
-        int read = 0;
-        while (dst.hasRemaining() && start + read < size) {
-            long current = start + read;
-            ByteBuffer page = pages.get((int) (current / pageSize));
-            int offset = (int) (current % pageSize);
-            int length = Math.min(dst.remaining(), page.limit() - offset);
-            dst.put(dst.position(), page, offset, length);
-            dst.position(dst.position() + length);
-            read += length;
+        int length = (int) Math.min(dst.remaining(), size() - start);
+        if (dst.hasArray()) {
+            MemorySegment.copy(segment, JAVA_BYTE, start, dst.array(), dst.arrayOffset() + dst.position(), length);
+        } else {
+            MemorySegment.copy(segment, start, MemorySegment.ofBuffer(dst), 0, length);
         }
-        return read;
+        dst.position(dst.position() + length);
+        return length;
     }
 
     @Override
     public int read() throws IOException {
         requireOpen();
-        int zeroBasedPagesNumber = (int) (position() / pageSize);
-        ByteBuffer page = pages.get(zeroBasedPagesNumber);
-        int relativePosition = (int) (position() - (zeroBasedPagesNumber * pageSize));
-        if (relativePosition < page.limit()) {
-            position++;
-            return page.get(relativePosition) & 0xff;
+        if (position < size()) {
+            return segment.get(JAVA_BYTE, position++) & 0xff;
         }
         return -1;
     }
@@ -143,7 +121,6 @@ public class MemoryMappedSeekableSource extends BaseSeekableSource {
         if (arena.scope().isAlive()) {
             arena.close();
         }
-        this.pages.clear();
     }
 
     @Override
