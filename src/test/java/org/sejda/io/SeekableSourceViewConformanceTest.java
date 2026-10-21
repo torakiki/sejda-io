@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -191,6 +192,17 @@ public class SeekableSourceViewConformanceTest {
         source.close();
         assertThrows(IllegalStateException.class, view::read);
         assertThrows(IllegalStateException.class, () -> view.read(ByteBuffer.allocate(10)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("sources")
+    public void viewIsClosedWithItsSource(SourceFactory factory) throws IOException {
+        var source = factory.open(file);
+        var view = source.view(100, 200);
+        var stream = view.asInputStream();
+        source.close();
+        assertFalse(view.isOpen());
+        assertThrows(IOException.class, stream::read);
     }
 
     /**

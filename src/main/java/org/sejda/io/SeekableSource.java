@@ -59,7 +59,7 @@ public interface SeekableSource extends ReadableByteChannel {
 
     /**
      * @return a readable view of a portion of this {@link SeekableSource}. Reading from the view doesn't affect the {@link SeekableSource} position. Closing the
-     *         {@link SeekableSource} makes all the views unreadable but closing the view has no effect on the {@link SeekableSource}. A view and its
+     *         {@link SeekableSource} closes all its views, but closing a view has no effect on the {@link SeekableSource}. A view and its
      *         {@link SeekableSource} are not thread safe, but they can be read concurrently by two different threads.
      * @throws IOException
      *             if something goes wrong while creating the view

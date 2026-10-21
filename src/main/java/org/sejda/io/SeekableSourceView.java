@@ -23,7 +23,7 @@ import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 import static org.sejda.commons.util.RequireUtils.requireState;
 
 /**
- * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view becomes invalid if the parent {@link SeekableSource} is closed.
+ * {@link SeekableSource} representing a view over a portion of a parent {@link SeekableSource}. A view is closed when the parent {@link SeekableSource} is closed.
  * Reading the view doesn't modify the parent position.
  *
  * @author Andrea Vacondio
@@ -114,9 +114,14 @@ class SeekableSourceView extends BaseSeekableSource {
     }
 
     @Override
+    public boolean isOpen() {
+        return super.isOpen() && parent.isOpen();
+    }
+
+    @Override
     public void requireOpen() throws IOException {
+        requireState(parent.isOpen(), "The parent SeekableSource has been closed");
         super.requireOpen();
-        requireState(parent.isOpen(), "The original SeekableSource has been closed");
     }
 
     /**

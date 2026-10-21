@@ -116,8 +116,9 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
         ByteArraySeekableSource wrapped = new ByteArraySeekableSource(new byte[] { -1 });
         victim = wrapped.view(0, 1);
         wrapped.close();
-        assertTrue(victim.isOpen());
-        assertThrows(IllegalStateException.class, () -> victim.read());
+        assertFalse(victim.isOpen());
+        var e = assertThrows(IllegalStateException.class, () -> victim.read());
+        assertEquals("The parent SeekableSource has been closed", e.getMessage());
     }
 
     @Test
