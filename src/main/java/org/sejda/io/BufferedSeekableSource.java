@@ -51,7 +51,7 @@ public class BufferedSeekableSource implements SeekableSource {
     }
 
     @Override
-    public void requireOpen() throws IOException {
+    public void requireOpen() {
         this.wrapped.requireOpen();
     }
 

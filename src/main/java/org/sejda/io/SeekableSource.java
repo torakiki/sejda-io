@@ -156,7 +156,7 @@ public interface SeekableSource extends ReadableByteChannel {
     /**
      * @throws IllegalStateException if the source is closed
      */
-    void requireOpen() throws IOException;
+    void requireOpen();
 
     /**
      * Creates an {@link InputStream} from this {@link SeekableSource} resetting the stream to the beginning.

@@ -49,7 +49,7 @@ class OffsettableSeekableSourceImpl implements OffsettableSeekableSource {
     }
 
     @Override
-    public void requireOpen() throws IOException {
+    public void requireOpen() {
         this.wrapped.requireOpen();
     }
 
