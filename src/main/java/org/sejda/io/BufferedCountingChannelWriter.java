@@ -73,8 +73,15 @@ public class BufferedCountingChannelWriter implements Closeable {
      * Writes the given bytes to the destination
      */
     public void write(byte[] bytes) throws IOException {
-        for (byte aByte : bytes) {
-            write(aByte);
+        int written = 0;
+        while (written < bytes.length) {
+            onNewLine = false;
+            int length = Math.min(buffer.remaining(), bytes.length - written);
+            buffer.put(bytes, written, length);
+            written += length;
+            if (!buffer.hasRemaining()) {
+                flush();
+            }
         }
     }
 

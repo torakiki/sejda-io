@@ -134,6 +134,27 @@ public class BufferedCountingChannelWriterTest {
     }
 
     @Test
+    public void writeBytesOverMultipleBuffers() throws IOException {
+        System.getProperties().setProperty(BufferedCountingChannelWriter.OUTPUT_BUFFER_SIZE_PROPERTY, "4");
+        victim = new BufferedCountingChannelWriter(channel);
+        victim.write((byte) '0');
+        byte[] bytes = "ChuckNorris".getBytes(StandardCharsets.ISO_8859_1);
+        victim.write(bytes);
+        assertEquals(12, victim.offset());
+        victim.close();
+        assertArrayEquals("0ChuckNorris".getBytes(StandardCharsets.ISO_8859_1), out.toByteArray());
+    }
+
+    @Test
+    public void writeEOLAfterBytes() throws IOException {
+        victim.writeEOL();
+        victim.write("Chuck");
+        victim.writeEOL();
+        victim.close();
+        assertArrayEquals("\nChuck\n".getBytes(StandardCharsets.ISO_8859_1), out.toByteArray());
+    }
+
+    @Test
     public void writeInputStream() throws IOException {
         byte[] bytes = new byte[] { '1', '1', '2', '1', '1' };
         victim.write(bytes);
