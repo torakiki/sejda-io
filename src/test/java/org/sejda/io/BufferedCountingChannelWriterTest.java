@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -30,7 +31,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -152,6 +155,34 @@ public class BufferedCountingChannelWriterTest {
         victim.writeEOL();
         victim.close();
         assertArrayEquals("\nChuck\n".getBytes(StandardCharsets.ISO_8859_1), out.toByteArray());
+    }
+
+    @Test
+    public void writeInputStreamOverMultipleBuffers() throws IOException {
+        System.getProperties().setProperty(BufferedCountingChannelWriter.OUTPUT_BUFFER_SIZE_PROPERTY, "4");
+        victim = new BufferedCountingChannelWriter(channel);
+        victim.write((byte) '0');
+        victim.write(new ByteArrayInputStream("ChuckNorris".getBytes(StandardCharsets.ISO_8859_1)));
+        assertEquals(12, victim.offset());
+        victim.close();
+        assertArrayEquals("0ChuckNorris".getBytes(StandardCharsets.ISO_8859_1), out.toByteArray());
+    }
+
+    @Test
+    public void writeInputStreamDoesntFlushBeforeBufferIsFull() throws IOException {
+        channel = mock(CountingWritableByteChannel.class);
+        victim = new BufferedCountingChannelWriter(channel);
+        victim.write("Chuck");
+        victim.write(new ByteArrayInputStream("Norris".getBytes(StandardCharsets.ISO_8859_1)));
+        verify(channel, times(0)).write(any());
+    }
+
+    @Test
+    public void writeInputStreamDoesntCloseTheStream() throws IOException {
+        InputStream stream = mock(InputStream.class);
+        when(stream.read(any(), anyInt(), anyInt())).thenReturn(-1);
+        victim.write(stream);
+        verify(stream, never()).close();
     }
 
     @Test

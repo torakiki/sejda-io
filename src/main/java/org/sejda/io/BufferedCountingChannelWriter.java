@@ -21,8 +21,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
@@ -39,7 +37,7 @@ public class BufferedCountingChannelWriter implements Closeable {
     private static final byte EOL = '\n';
 
     private final CountingWritableByteChannel channel;
-    private final ByteBuffer buffer = ByteBuffer.allocate(Integer.getInteger(OUTPUT_BUFFER_SIZE_PROPERTY, 4096));
+    private final ByteBuffer buffer = ByteBuffer.allocate(Integer.getInteger(OUTPUT_BUFFER_SIZE_PROPERTY, 65536));
     private boolean onNewLine = false;
 
     public BufferedCountingChannelWriter(CountingWritableByteChannel channel) {
@@ -97,13 +95,14 @@ public class BufferedCountingChannelWriter implements Closeable {
     }
 
     /**
-     * Writes everything that is read from the {@link InputStream} to the destination
+     * Writes everything that is read from the {@link InputStream} to the destination. The stream is not closed.
      */
     public void write(InputStream stream) throws IOException {
         onNewLine = false;
-        try (ReadableByteChannel readable = Channels.newChannel(stream)) {
-            flush();
-            while (readable.read(buffer) != -1) {
+        int read;
+        while ((read = stream.read(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining())) != -1) {
+            buffer.position(buffer.position() + read);
+            if (!buffer.hasRemaining()) {
                 flush();
             }
         }
