@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -75,6 +76,7 @@ public class BufferedCountingChannelWriterTest {
     @Test
     public void flush() throws IOException {
         channel = mock(CountingWritableByteChannel.class);
+        when(channel.write(any())).thenAnswer(i -> writeAll(i.getArgument(0)));
         victim = new BufferedCountingChannelWriter(channel);
         victim.writeEOL();
         verify(channel, times(0)).write(any());
@@ -86,6 +88,7 @@ public class BufferedCountingChannelWriterTest {
     public void closeFlushes() throws IOException {
         channel = mock(CountingWritableByteChannel.class);
         when(channel.isOpen()).thenReturn(true);
+        when(channel.write(any())).thenAnswer(i -> writeAll(i.getArgument(0)));
         victim = new BufferedCountingChannelWriter(channel);
         victim.writeEOL();
         verify(channel, times(0)).write(any());
@@ -196,5 +199,11 @@ public class BufferedCountingChannelWriterTest {
         byte[] expected = Arrays.copyOf(bytes, bytes.length + streamBytes.length);
         System.arraycopy(streamBytes, 0, expected, bytes.length, streamBytes.length);
         assertArrayEquals(expected, out.toByteArray());
+    }
+
+    private static int writeAll(ByteBuffer src) {
+        var written = src.remaining();
+        src.position(src.limit());
+        return written;
     }
 }

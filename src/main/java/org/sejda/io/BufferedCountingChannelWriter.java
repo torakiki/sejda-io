@@ -116,11 +116,13 @@ public class BufferedCountingChannelWriter implements Closeable {
     }
 
     /**
-     * Flush the buffer
+     * Flush the buffer, writing it all since the channel may write only part of it at each call
      */
     public void flush() throws IOException {
         buffer.flip();
-        channel.write(buffer);
+        while (buffer.hasRemaining()) {
+            channel.write(buffer);
+        }
         buffer.clear();
     }
 }
