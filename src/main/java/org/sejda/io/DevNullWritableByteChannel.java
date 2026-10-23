@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * {@link WritableByteChannel} that does nothing .
+ * {@link WritableByteChannel} that discards everything written to it.
  * 
  * @author Andrea Vacondio
  *
@@ -40,7 +40,9 @@ public class DevNullWritableByteChannel implements WritableByteChannel {
 
     @Override
     public int write(ByteBuffer src) {
-        return src.remaining();
+        var written = src.remaining();
+        src.position(src.limit());
+        return written;
     }
 
 }

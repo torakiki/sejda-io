@@ -17,7 +17,9 @@ package org.sejda.io;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,6 +43,17 @@ public class DevNullWritableByteChannelTest {
     @Test
     public void write() {
         assertEquals(5, victim.write(src));
+        assertFalse(src.hasRemaining());
+    }
+
+    @Test
+    @Timeout(5)
+    public void flushToDevNull() throws IOException {
+        var channel = CountingWritableByteChannel.from(victim);
+        var writer = new BufferedCountingChannelWriter(channel);
+        writer.write("ChuckNorris");
+        writer.flush();
+        assertEquals(11, channel.count());
     }
 
     @Test
