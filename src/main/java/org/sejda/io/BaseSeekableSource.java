@@ -35,6 +35,13 @@ public abstract class BaseSeekableSource implements SeekableSource {
         this.id = id;
     }
 
+    /**
+     * For subclasses that override {@link #id()}
+     */
+    BaseSeekableSource() {
+        this.id = null;
+    }
+
     @Override
     public boolean isOpen() {
         return open;
@@ -50,9 +57,6 @@ public abstract class BaseSeekableSource implements SeekableSource {
         requireState(isOpen(), "The SeekableSource has been closed");
     }
 
-    /**
-     * @return the unique id for this source
-     */
     @Override
     public String id() {
         return id;

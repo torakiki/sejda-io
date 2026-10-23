@@ -26,7 +26,10 @@ import java.nio.channels.ReadableByteChannel;
  */
 public interface SeekableSource extends ReadableByteChannel {
     /**
-     * @return the unique id for the source.
+     * Identifies the content this source reads, not the source instance. Sources over the same file (same absolute path) or the same bytes have equal ids.
+     * Wrappers return the id of the source they wrap while views return it qualified by the portion they read.
+     *
+     * @return the id identifying the content this source reads.
      */
     String id();
 

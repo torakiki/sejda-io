@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -42,6 +43,25 @@ public class ByteArraySeekableSourceTest extends BaseTestSeekableSource {
     public void failingConstructor() {
         assertThrows(IllegalArgumentException.class, () -> new ByteArraySeekableSource(null),
                 "Input byte array cannot be null");
+    }
+
+    @Test
+    public void id() {
+        assertEquals(victim.id(), new ByteArraySeekableSource(new byte[] { 'a', 'b', 'c' }).id());
+        assertNotEquals(victim.id(), new ByteArraySeekableSource(new byte[] { 'a', 'b' }).id());
+    }
+
+    @Test
+    public void idAfterClose() throws IOException {
+        var id = victim.id();
+        victim.close();
+        assertEquals(id, victim.id());
+    }
+
+    @Test
+    public void idNeverRequestedBeforeClose() throws IOException {
+        victim.close();
+        assertThrows(IllegalStateException.class, () -> victim.id());
     }
 
     @Test

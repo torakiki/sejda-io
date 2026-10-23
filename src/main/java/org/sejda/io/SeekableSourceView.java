@@ -44,11 +44,15 @@ class SeekableSourceView extends BaseSeekableSource {
         requireArg(startingPosition >= 0, "Starting position cannot be negative");
         requireArg(length > 0, "View length must be positive");
         requireArg(startingPosition < parent.size(), "Starting position cannot be higher then wrapped source size");
-        super(parent.id());
         this.parent = parent;
         this.reader = reader;
         this.startingPosition = startingPosition;
         this.length = Math.min(length, parent.size() - startingPosition);
+    }
+
+    @Override
+    public String id() {
+        return parent.id() + "[" + startingPosition + "," + length + "]";
     }
 
     @Override

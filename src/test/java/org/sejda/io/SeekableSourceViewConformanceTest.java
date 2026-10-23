@@ -39,6 +39,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -81,6 +82,18 @@ public class SeekableSourceViewConformanceTest {
             source.view(100, 200);
             assertEquals(7, source.position());
             assertEquals(expectedByte(7), source.read());
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("sources")
+    public void viewIdIdentifiesTheReadPortion(SourceFactory factory) throws IOException {
+        try (var source = factory.open(file)) {
+            var view = source.view(100, 200);
+            assertEquals(view.id(), source.view(100, 200).id());
+            assertNotEquals(view.id(), source.view(100, 300).id());
+            assertNotEquals(view.id(), source.view(200, 200).id());
+            assertNotEquals(source.id(), view.id());
         }
     }
 

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
+import static java.util.Objects.isNull;
 import static org.sejda.commons.util.RequireUtils.requireArg;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
@@ -30,11 +31,23 @@ import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 public class ByteArraySeekableSource extends BaseSeekableSource {
     private byte[] bytes;
     private long position;
+    private String id;
 
     public ByteArraySeekableSource(byte[] bytes) {
         requireNotNullArg(bytes, "Input byte array cannot be null");
-        super(UUID.nameUUIDFromBytes(bytes).toString());
         this.bytes = bytes;
+    }
+
+    /**
+     * @return a name based UUID of the bytes, computed the first time it's requested, since it's costly for big arrays and often never requested
+     */
+    @Override
+    public String id() {
+        if (isNull(id)) {
+            requireOpen();
+            id = UUID.nameUUIDFromBytes(bytes).toString();
+        }
+        return id;
     }
 
     @Override
