@@ -193,6 +193,15 @@ public class SeekableSourceInputStreamTest {
     }
 
     @Test
+    public void skipNegative() throws IOException {
+        ByteArraySeekableSource source = new ByteArraySeekableSource(new byte[] { -1, 1, 0, 1 });
+        SeekableSourceInputStream victim = new SeekableSourceInputStream(source);
+        victim.skip(2);
+        assertEquals(0, victim.skip(-1));
+        assertEquals(2, source.position());
+    }
+
+    @Test
     public void skipClosed() {
         when(source.isOpen()).thenReturn(false);
         assertThrows(IOException.class, () -> victim.skip(5));

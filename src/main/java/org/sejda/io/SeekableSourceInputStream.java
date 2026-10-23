@@ -24,7 +24,7 @@ import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
  * Bridge between {@link SeekableSource} and {@link InputStream}
- * 
+ *
  * @author Andrea Vacondio
  */
 class SeekableSourceInputStream extends InputStream {
@@ -67,8 +67,11 @@ class SeekableSourceInputStream extends InputStream {
     @Override
     public long skip(long offset) throws IOException {
         SeekableSource source = getSource();
-        long start = source.position();
-        return source.forward(Math.min(offset, available())).position() - start;
+        if (offset > 0) {
+            long start = source.position();
+            return source.forward(Math.min(offset, available())).position() - start;
+        }
+        return 0;
     }
 
     private SeekableSource getSource() throws IOException {
