@@ -79,7 +79,7 @@ public class SeekableSourceViewTest extends BaseTestSeekableSource {
     public void outOfBoundsStartPositionConstructor() {
         assertThrows(IllegalArgumentException.class,
                 () -> new ByteArraySeekableSource(new byte[] { -1, 2 }).view(3, 100),
-                "Starting position cannot be higher then wrapped source size");
+                "Starting position cannot be higher than the parent source size");
     }
 
     @Test

@@ -56,9 +56,6 @@ public class BufferedSeekableSource implements SeekableSource {
         this.wrapped.requireOpen();
     }
 
-    /**
-     * @return the unique id for this source
-     */
     @Override
     public String id() {
         return this.wrapped.id();

@@ -40,6 +40,7 @@ public class ByteArraySeekableSource extends BaseSeekableSource {
 
     /**
      * @return a name based UUID of the bytes, computed the first time it's requested, since it's costly for big arrays and often never requested
+     * @throws IllegalStateException if first requested after the source is closed
      */
     @Override
     public String id() {
