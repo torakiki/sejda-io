@@ -24,16 +24,18 @@ import static org.sejda.commons.util.RequireUtils.requireArg;
 import static org.sejda.commons.util.RequireUtils.requireNotNullArg;
 
 /**
- * {@link SeekableSource} wrapping an existing one and providing buffered read. When a read method is called, a {@link SeekableSources#INPUT_BUFFER_SIZE_PROPERTY} long chunk of
- * bytes is read from the underlying source and stored in memory. Subsequent reads are served from the in memory buffer until they fall outside its range, at that point a new
- * buffer is read from the wrapped source.
+ * {@link SeekableSource} wrapping an existing one and providing buffered read. When {@link #read()} is called, a {@link SeekableSources#INPUT_BUFFER_SIZE_PROPERTY} long chunk
+ * of bytes is read from the underlying source and stored in memory. Subsequent reads are served from the in memory buffer until they fall outside its range, at that point a
+ * new buffer is read from the wrapped source. {@link #read(ByteBuffer)} reads straight from the wrapped source.
  *
  * @author Andrea Vacondio
  */
 public class BufferedSeekableSource implements SeekableSource {
 
-    private final ByteBuffer buffer = ByteBuffer.allocate(
-            Integer.getInteger(SeekableSources.INPUT_BUFFER_SIZE_PROPERTY, 8192));
+    /**
+     * Allocated on the first {@link #read()}, since many sources are only read in bulk through {@link #read(ByteBuffer)}, which doesn't use it
+     */
+    private ByteBuffer buffer = ByteBuffer.allocate(0);
     private final SeekableSource wrapped;
     private long position;
     private final long size;
@@ -42,7 +44,6 @@ public class BufferedSeekableSource implements SeekableSource {
         requireNotNullArg(wrapped, "Input decorated SeekableSource cannot be null");
         this.wrapped = wrapped;
         this.size = wrapped.size();
-        this.buffer.limit(0);
     }
 
     @Override
@@ -92,8 +93,7 @@ public class BufferedSeekableSource implements SeekableSource {
     @Override
     public void close() throws IOException {
         IOUtils.close(wrapped);
-        buffer.clear();
-        buffer.limit(0);
+        buffer = ByteBuffer.allocate(0);
     }
 
     @Override
@@ -120,11 +120,18 @@ public class BufferedSeekableSource implements SeekableSource {
 
     private int ensureBuffer() throws IOException {
         if (!buffer.hasRemaining()) {
+            allocateBufferIfNeeded();
             buffer.clear();
             wrapped.read(buffer);
             buffer.flip();
         }
         return buffer.remaining();
+    }
+
+    private void allocateBufferIfNeeded() {
+        if (buffer.capacity() == 0) {
+            buffer = ByteBuffer.allocate(Integer.getInteger(SeekableSources.INPUT_BUFFER_SIZE_PROPERTY, 8192));
+        }
     }
 
     protected SeekableSource wrapped() {
