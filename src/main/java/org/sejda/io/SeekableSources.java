@@ -40,7 +40,7 @@ public final class SeekableSources {
      */
     public static final String MAPPED_SIZE_THRESHOLD_PROPERTY = "org.sejda.io.mapped.size.threshold";
     /**
-     * Threshold size in bytes where the SeekableSources method will switch to {@link MemoryMappedSeekableSource#MemoryMappedSeekableSource(File)}
+     * If true the SeekableSources methods never use {@link MemoryMappedSeekableSource}
      */
     public static final String DISABLE_MEMORY_MAPPED_PROPERTY = "org.sejda.io.mapped.disabled";
     /**
