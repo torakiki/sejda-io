@@ -151,6 +151,21 @@ public abstract class BaseTestSeekableSource {
     }
 
     @Test
+    public void reset() throws IOException {
+        int first = victim().read();
+        victim().position(victim().size());
+        victim().reset();
+        assertEquals(0, victim().position());
+        assertEquals(first, victim().read());
+    }
+
+    @Test
+    public void resetClosed() throws IOException {
+        victim().close();
+        assertThrows(IllegalStateException.class, () -> victim().reset());
+    }
+
+    @Test
     public void requireOpen() throws IOException {
         assertTrue(victim().isOpen());
         victim().requireOpen();

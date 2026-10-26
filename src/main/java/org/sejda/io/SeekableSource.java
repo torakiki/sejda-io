@@ -17,6 +17,7 @@ package org.sejda.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.channels.ReadableByteChannel;
 
 /**
@@ -146,14 +147,14 @@ public interface SeekableSource extends ReadableByteChannel {
     }
 
     /**
-     * Resets stream back to beginning
+     * Resets the SeekableSource back to the beginning
      */
     default void reset() {
+        requireOpen();
         try {
-            requireOpen();
-            this.back(this.position());
+            position(0);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to reset stream");
+            throw new UncheckedIOException("Failed to reset the source", e);
         }
     }
 

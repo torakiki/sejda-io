@@ -63,6 +63,14 @@ public class OffsettableSeekableSourceImplTest extends BaseTestSeekableSource {
     }
 
     @Test
+    public void resetMovesWrappedToOffset() throws IOException {
+        victim.position(victim.size());
+        victim.reset();
+        assertEquals(3, wrapped.position());
+        assertEquals('a', victim.read());
+    }
+
+    @Test
     public void constructor() {
         assertEquals(wrapped.id(), victim.id());
     }

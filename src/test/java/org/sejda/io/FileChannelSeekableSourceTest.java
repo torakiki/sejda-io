@@ -99,15 +99,6 @@ public class FileChannelSeekableSourceTest extends BaseTestSeekableSource {
     }
 
     @Test
-    public void reset() throws IOException {
-        ByteBuffer dst = ByteBuffer.allocate(20);
-        victim.read(dst);
-        assertEquals(20, victim.position());
-        victim.reset();
-        assertEquals(0, victim.position());
-    }
-
-    @Test
     public void newInputStream() throws IOException {
         int length = 20;
         byte[] buffer1 = new byte[length];
