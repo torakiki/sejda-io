@@ -66,10 +66,12 @@ public interface SeekableSource extends ReadableByteChannel {
      *         {@link SeekableSource} closes all its views, but closing a view has no effect on the {@link SeekableSource}. Neither a
      *         source nor its views are thread safe, so each must be used by one thread at a time, but a source and its views can be read concurrently, each
      *         by its own thread.
-     * @throws IOException
-     *             if something goes wrong while creating the view
+     * @throws IllegalStateException
+     *             if this source is closed
+     * @throws IllegalArgumentException
+     *             if the starting position or the length are invalid
      */
-    SeekableSource view(long startingPosition, long length) throws IOException;
+    SeekableSource view(long startingPosition, long length);
 
     /**
      * Skips backward the given number of bytes moving back the source position

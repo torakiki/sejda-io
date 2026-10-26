@@ -82,7 +82,7 @@ class OffsettableSeekableSourceImpl implements OffsettableSeekableSource {
     }
 
     @Override
-    public SeekableSource view(long startingPosition, long length) throws IOException {
+    public SeekableSource view(long startingPosition, long length) {
         return this.wrapped.view(startingPosition + offset, length);
     }
 

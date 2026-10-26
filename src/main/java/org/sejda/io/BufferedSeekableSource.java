@@ -136,7 +136,7 @@ public class BufferedSeekableSource implements SeekableSource {
     }
 
     @Override
-    public SeekableSource view(long startingPosition, long length) throws IOException {
+    public SeekableSource view(long startingPosition, long length) {
         requireOpen();
         return new BufferedSeekableSource(wrapped.view(startingPosition, length));
     }

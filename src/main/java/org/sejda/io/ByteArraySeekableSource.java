@@ -106,7 +106,7 @@ public class ByteArraySeekableSource extends BaseSeekableSource {
     }
 
     @Override
-    public SeekableSource view(long startingPosition, long length) throws IOException {
+    public SeekableSource view(long startingPosition, long length) {
         requireOpen();
         return new SeekableSourceView(this, this::readAt, startingPosition, length);
     }
